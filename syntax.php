@@ -69,15 +69,15 @@ class syntax_plugin_exttab2 extends DokuWiki_Syntax_Plugin {
     function getType(){  return 'container';}
     function getPType(){ return 'block';}
     function getSort(){  return 50; }
-    function getAllowedTypes() { 
-        return array('container', 'formatting', 'substition', 'disabled', 'protected'); 
+    function getAllowedTypes() {
+        return array('container', 'formatting', 'substition', 'disabled', 'protected');
     }
 
-    function connectTo($mode) { 
-        $this->Lexer->addEntryPattern('\n\{\|[^\n]*',$mode,'plugin_exttab2'); 
+    function connectTo($mode) {
+        $this->Lexer->addEntryPattern('\n\{\|[^\n]*',$mode,'plugin_exttab2');
     }
 
-    function postConnect() { 
+    function postConnect() {
         $para = "[^\|\n\[\{\!]+"; // parametes
 
         // caption: |+ params | caption
@@ -153,19 +153,19 @@ class syntax_plugin_exttab2 extends DokuWiki_Syntax_Plugin {
             list($state, $func, $params) = $data;
 
             switch ($state) {
-              case DOKU_LEXER_UNMATCHED :
-                $r = $renderer->_xmlEntities($params);
-                $renderer->doc .= $r;
-                break;
-              case DOKU_LEXER_ENTER :
-              case DOKU_LEXER_MATCHED:
-                $r = $this->$func($params);
-                $renderer->doc .= $r;
-                break;
-              case DOKU_LEXER_EXIT :
-                $r = $this->$func($params);
-                $renderer->doc .= $r; 
-                break;
+                case DOKU_LEXER_UNMATCHED :
+                    $r = $renderer->_xmlEntities($params);
+                    $renderer->doc .= $r;
+                    break;
+                case DOKU_LEXER_ENTER :
+                case DOKU_LEXER_MATCHED:
+                    $r = $this->$func($params);
+                    $renderer->doc .= $r;
+                    break;
+                case DOKU_LEXER_EXIT :
+                    $r = $this->$func($params);
+                    $renderer->doc .= $r; 
+                    break;
             }
             return true;
         }
@@ -259,25 +259,25 @@ class syntax_plugin_exttab2 extends DokuWiki_Syntax_Plugin {
     function table_end($params=NULL) {
         $t = end($this->stack);
         switch($t){
-          case EXTTAB2_TABLE:
-            array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
-            $r.= $this->_opentag(EXTTAB2_TR, $params);
-            $r.= $this->_opentag(EXTTAB2_TD, $params);
-            break;
-          case EXTTAB2_CAPTION:
-            $r.= $this->_closetag(EXTTAB2_CAPTION);
-            array_pop($this->stack);
-            array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
-            $r.= $this->_opentag(EXTTAB2_TR, $params);
-            $r.= $this->_opentag(EXTTAB2_TD, $params);
-            break;
-          case EXTTAB2_TR:
-            array_push($this->stack, EXTTAB2_TD);
-            $r = $this->_opentag(EXTTAB2_TD, $params);
-            break;
-          case EXTTAB2_TD:
-          case EXTTAB2_TH:
-            break;
+            case EXTTAB2_TABLE:
+                array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
+                $r.= $this->_opentag(EXTTAB2_TR, $params);
+                $r.= $this->_opentag(EXTTAB2_TD, $params);
+                break;
+            case EXTTAB2_CAPTION:
+                $r.= $this->_closetag(EXTTAB2_CAPTION);
+                array_pop($this->stack);
+                array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
+                $r.= $this->_opentag(EXTTAB2_TR, $params);
+                $r.= $this->_opentag(EXTTAB2_TD, $params);
+                break;
+            case EXTTAB2_TR:
+                array_push($this->stack, EXTTAB2_TD);
+                $r = $this->_opentag(EXTTAB2_TD, $params);
+                break;
+            case EXTTAB2_TD:
+            case EXTTAB2_TH:
+                break;
         }
 
         while (($t = end($this->stack)) != EXTTAB2_TABLE) {
@@ -329,85 +329,85 @@ class syntax_plugin_exttab2 extends DokuWiki_Syntax_Plugin {
     function _finishtags($tag) {
         $r = '';
         switch ($tag) {
-          case EXTTAB2_TD:
-          case EXTTAB2_TH:
-            $t = end($this->stack);
-            switch ($t) {
-              case EXTTAB2_TABLE:
-                array_push($this->stack, EXTTAB2_TR);
-                $r.= $this->_opentag(EXTTAB2_TR, $params);
+            case EXTTAB2_TD:
+            case EXTTAB2_TH:
+                $t = end($this->stack);
+                switch ($t) {
+                    case EXTTAB2_TABLE:
+                        array_push($this->stack, EXTTAB2_TR);
+                        $r.= $this->_opentag(EXTTAB2_TR, $params);
+                        break;
+                    case EXTTAB2_CAPTION:
+                        $r.= $this->_closetag(EXTTAB2_CAPTION);
+                        array_pop($this->stack);
+                        array_push($this->stack, EXTTAB2_TR);
+                        $r.= $this->_opentag(EXTTAB2_TR, $params);
+                        break;
+                    case EXTTAB2_TR:
+                        break;
+                    case EXTTAB2_TD:
+                    case EXTTAB2_TH:
+                        $r.= $this->_closetag($t);
+                        array_pop($this->stack);
+                        break;
+                }
                 break;
-              case EXTTAB2_CAPTION:
-                $r.= $this->_closetag(EXTTAB2_CAPTION);
-                array_pop($this->stack);
-                array_push($this->stack, EXTTAB2_TR);
-                $r.= $this->_opentag(EXTTAB2_TR, $params);
+            case EXTTAB2_TR:
+                $t = end($this->stack);
+                switch ($t) {
+                    case EXTTAB2_TABLE:
+                        break;
+                    case EXTTAB2_CAPTION:
+                        $r.= $this->_closetag(EXTTAB2_CAPTION);
+                        array_pop($this->stack);
+                        break;
+                    case EXTTAB2_TR:
+                        $r.= $this->_opentag(EXTTAB2_TD);
+                        $r.= $this->_closetag(EXTTAB2_TD);
+                        $r.= $this->_closetag(EXTTAB2_TR);
+                        array_pop($this->stack);
+                        break;
+                    case EXTTAB2_TD:
+                    case EXTTAB2_TH:
+                        $r.= $this->_closetag($t);
+                        $r.= $this->_closetag(EXTTAB2_TR);
+                        array_pop($this->stack);
+                        array_pop($this->stack);
+                        break;
+                }
                 break;
-              case EXTTAB2_TR:
+            case EXTTAB2_TABLE:
+                $t = end($this->stack);
+                if ($t === FALSE) break;
+                switch ($t) {
+                    case EXTTAB2_TABLE:
+                        array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
+                        $r.= $this->_opentag(EXTTAB2_TR, $params);
+                        $r.= $this->_opentag(EXTTAB2_TD, $params);
+                        break;
+                    case EXTTAB2_CAPTION:
+                        $r.= $this->_closetag(EXTTAB2_CAPTION);
+                        array_pop($this->stack);
+                        array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
+                        $r.= $this->_opentag(EXTTAB2_TR, $params);
+                        $r.= $this->_opentag(EXTTAB2_TD, $params);
+                        break;
+                    case EXTTAB2_TR:
+                        array_push($this->stack, EXTTAB2_TD);
+                        $r = $this->_opentag(EXTTAB2_TD, $params);
+                        break;
+                    case EXTTAB2_TD:
+                    case EXTTAB2_TH:
+                        break;
+                }
                 break;
-              case EXTTAB2_TD:
-              case EXTTAB2_TH:
-                $r.= $this->_closetag($t);
-                array_pop($this->stack);
+            case EXTTAB2_CAPTION:
+                $t = end($this->stack);
+                if ($t == EXTTAB2_TABLE) {
+                } else {
+                    return false ; // ignore this, or should echo error?
+                }
                 break;
-            }
-            break;
-          case EXTTAB2_TR:
-            $t = end($this->stack);
-            switch ($t) {
-              case EXTTAB2_TABLE:
-                break;
-              case EXTTAB2_CAPTION:
-                $r.= $this->_closetag(EXTTAB2_CAPTION);
-                array_pop($this->stack);
-                break;
-              case EXTTAB2_TR:
-                $r.= $this->_opentag(EXTTAB2_TD);
-                $r.= $this->_closetag(EXTTAB2_TD);
-                $r.= $this->_closetag(EXTTAB2_TR);
-                array_pop($this->stack);
-                break;
-              case EXTTAB2_TD:
-              case EXTTAB2_TH:
-                $r.= $this->_closetag($t);
-                $r.= $this->_closetag(EXTTAB2_TR);
-                array_pop($this->stack);
-                array_pop($this->stack);
-                break;
-            }
-            break;
-          case EXTTAB2_TABLE:
-            $t = end($this->stack);
-            if ($t === FALSE) break;
-            switch ($t) {
-              case EXTTAB2_TABLE:
-                array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
-                $r.= $this->_opentag(EXTTAB2_TR, $params);
-                $r.= $this->_opentag(EXTTAB2_TD, $params);
-                break;
-              case EXTTAB2_CAPTION:
-                $r.= $this->_closetag(EXTTAB2_CAPTION);
-                array_pop($this->stack);
-                array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
-                $r.= $this->_opentag(EXTTAB2_TR, $params);
-                $r.= $this->_opentag(EXTTAB2_TD, $params);
-                break;
-              case EXTTAB2_TR:
-                array_push($this->stack, EXTTAB2_TD);
-                $r = $this->_opentag(EXTTAB2_TD, $params);
-                break;
-              case EXTTAB2_TD:
-              case EXTTAB2_TH:
-                break;
-            }
-            break;
-          case EXTTAB2_CAPTION:
-            $t = end($this->stack);
-            if ($t == EXTTAB2_TABLE) {
-            } else {
-                return false ; // ignore this, or should echo error?
-            }
-            break;
         }
         return $r;
     }
