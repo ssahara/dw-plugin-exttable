@@ -52,7 +52,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
     function getType(){  return 'container';}
     function getPType(){ return 'block';}
-    function getSort(){  return 10; }
+    function getSort(){  return Doku_Parser_Mode_table-1; } // =59
     function getAllowedTypes() { 
         return array('container', 'formatting', 'substition', 'disabled', 'protected'); 
     }
@@ -70,6 +70,9 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         $pluginMode = 'plugin_'.$this->getPluginName();
         $attrs = "[^\n\{\|\!]+"; // match pattern for attributes
 
+        // terminale = Exit Pattren: table end markup + twice \n
+        $this->Lexer->addExitPattern('\n\|\}(?=\n\n)', $pluginMode);
+
         // caption:      |+ attrs | caption
         $this->Lexer->addPattern("\n\|\+(?:$attrs\|(?!\|))?", $pluginMode);
         // table row:    |- attrs
@@ -82,8 +85,6 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         $this->Lexer->addPattern("(?:\n|\!)\!(?:$attrs\|(?!\|))?", $pluginMode);
         // table data:   | attrs |
         $this->Lexer->addPattern("(?:\n|\|)\|(?:$attrs\|(?!\|))?", $pluginMode);
-        // terminate:
-        $this->Lexer->addExitPattern("\n(?=\n)", $pluginMode); 
     }
 
 
@@ -239,7 +240,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 }
                 break;
             case DOKU_LEXER_EXIT:
-                if ($this->tableDepth > 0) {
+                if ($this->tableDepth > 1) {
                     msg($this->getPluginName().': missing table end markup "|}" '.$this->tableDepth, -1);
                 }
                 while ($tag = array_pop($this->stack)) {
