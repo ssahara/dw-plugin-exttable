@@ -68,23 +68,23 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     }
     function postConnect() {
         $pluginMode = 'plugin_'.$this->getPluginName();
-        $attrs = "[^\n\{\|\!]+"; // match pattern for attributes
+        $attrs = '[^\n\{\|\!]+'; // match pattern for attributes
 
         // terminale = Exit Pattren: table end markup + twice \n
-        $this->Lexer->addExitPattern('\n\|\}(?=\n\n)', $pluginMode);
+        $this->Lexer->addExitPattern(' *?\n\|\}(?=\n\n)', $pluginMode);
 
         // caption:      |+ attrs | caption
         $this->Lexer->addPattern("\n\|\+(?:$attrs\|(?!\|))?", $pluginMode);
         // table row:    |- attrs
-        $this->Lexer->addPattern('\n\|\-+[^\n]*', $pluginMode);
+        $this->Lexer->addPattern(' *?\n\|\-+[^\n]*', $pluginMode);
         // table start:  {| attrs
-        $this->Lexer->addPattern('\n\{\|[^\n]*', $pluginMode);
+        $this->Lexer->addPattern(' *?\n\{\|[^\n]*', $pluginMode);
         // table end:    |}
-        $this->Lexer->addPattern('\n\|\}', $pluginMode);
+        $this->Lexer->addPattern(' *?\n\|\}', $pluginMode);
         // table header: ! attrs |
-        $this->Lexer->addPattern("(?:\n|\!)\!(?:$attrs\|(?!\|))?", $pluginMode);
+        $this->Lexer->addPattern("(?: *?\n|\!)\!(?:$attrs\|(?!\|))?", $pluginMode);
         // table data:   | attrs |
-        $this->Lexer->addPattern("(?:\n|\|)\|(?:$attrs\|(?!\|))?", $pluginMode);
+        $this->Lexer->addPattern("(?: *?\n|\|)\|(?:$attrs\|(?!\|))?", $pluginMode);
     }
 
 
@@ -131,7 +131,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      */
     function handle($match, $state, $pos, &$handler) {
 
-        //msg('handle: state='.$state.' match='.hsc($match), 0);
+        // msg('handle: state='.$state.' match="'.str_replace("\n","_",$match).'"', 0);
 
         switch ($state) {
             case DOKU_LEXER_ENTER:
@@ -254,7 +254,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 $tag_prev = end($this->stack);
                 switch ($tag_prev) {
                     case 'caption':
-                                // cdata --- use base() as _writeCall() is prefixed for private/protected
+                                // cdata --- use base() instead of $this->_writeCall()
                                 $handler->base($match, $state, $pos);
                                 // close caption tag
                                 $oldtag = array_pop($this->stack);
@@ -268,7 +268,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                                 $this->_writeCall('td','',DOKU_LEXER_ENTER, $pos,$match,$handler);
                     case 'th':
                     case 'td':
-                                // cdata --- use base() as _writeCall() is prefixed for private/protected
+                                // cdata --- use base() instead of $this->_writeCall()
                                 $handler->base($match, $state, $pos);
                                 break;
                 }
