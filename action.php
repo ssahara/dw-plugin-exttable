@@ -27,7 +27,7 @@ class action_plugin_exttab3 extends DokuWiki_Action_Plugin {
         $event->data[] = array (
             'type' => 'picker',
             'title' => 'extended table typical patterns',
-            'icon' => '../../plugins/exttab3/images/table.png'
+            'icon' => '../../plugins/exttab3/images/table.png',
             'list' => array(
                 array(
                     'type'   => 'format',
@@ -36,6 +36,14 @@ class action_plugin_exttab3 extends DokuWiki_Action_Plugin {
                     'sample' => 'table caption',
                     'open'   => '\n{| \n|+ ',
                     'close'  => '\n! header 1 !! header2\n|-\n| cell 1 || cell 2\n|}\n',
+                ),
+                array(
+                    'type'   => 'format',
+                    'title'  => 'spec sheet',
+                    'icon'   => '../../plugins/exttab3/images/table.png',
+                    'sample' => 'title',
+                    'open'   => '\n{|\n|+ ',
+                    'close'  => '\n|-\n! style='' | key || style='' | data\n|}\n',
                 ),
                 array(
                     'type'   => 'format',
