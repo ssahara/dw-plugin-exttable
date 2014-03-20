@@ -43,7 +43,7 @@ class action_plugin_exttab3 extends DokuWiki_Action_Plugin {
                     'icon'   => '../../plugins/exttab3/images/table.png',
                     'sample' => 'title',
                     'open'   => '\n{|\n|+ ',
-                    'close'  => '\n|-\n! style='' | key || style='' | data\n|}\n',
+                    'close'  => '\n|-\n! style="" | key || style="" | data\n|}\n',
                 ),
                 array(
                     'type'   => 'format',
