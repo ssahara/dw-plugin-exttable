@@ -1,10 +1,10 @@
 /*
  * DokuWiki Plugin ExtTab3 style.css
  */
-div.exttab ul {
-    padding-left: 0em;
+div.exttab p {
+    margin-bottom: 0;
 }
-div.exttab ol {
+div.exttab ul, ol {
     padding-left: 0em;
 }
 
