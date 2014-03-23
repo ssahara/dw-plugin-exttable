@@ -31,19 +31,12 @@ class action_plugin_exttab3 extends DokuWiki_Action_Plugin {
             'list' => array(
                 array(
                     'type'   => 'format',
-                    'title'  => 'simple',
-                    'icon'   => '../../plugins/exttab3/images/table.png',
-                    'sample' => 'table caption',
-                    'open'   => '\n{| \n|+ ',
-                    'close'  => '\n! header 1 !! header2\n|-\n| cell 1 || cell 2\n|}\n',
-                ),
-                array(
-                    'type'   => 'format',
-                    'title'  => 'spec sheet',
-                    'icon'   => '../../plugins/exttab3/images/table.png',
-                    'sample' => 'title',
-                    'open'   => '\n{|\n|+ ',
-                    'close'  => '\n|-\n! style="" | key || style="" | data\n|}\n',
+                    'title'  => 'Definition table',
+                    'icon'   => '../../plugins/exttab3/images/d.png',
+                    'sample' => 'term',
+                    'open'   => '\n{|\n|-\n! ',
+                    'close'  => ' || description\n|}\n',
+                    'block'  => true
                 ),
                 array(
                     'type'   => 'format',
@@ -52,15 +45,6 @@ class action_plugin_exttab3 extends DokuWiki_Action_Plugin {
                     'sample' => 'table caption',
                     'open'   => '\n{| style=""\n|+ ',
                     'close'  => '\n!\nA1\n!\nB1\n|-\n|\nA2\n|\nB2\n|}\n',
-                    'block'  => true
-                ),
-                array(
-                    'type'   => 'format',
-                    'title'  => 'multi cells in one line',
-                    'icon'   => '../../plugins/exttab3/images/table.png',
-                    'sample' => 'table class',
-                    'open'   => '\n{| class="',
-                    'close'  => '"\n| attr1 | Text1 || attr2 | Text2\n|}\n',
                     'block'  => true
                 ),
             )
