@@ -249,7 +249,6 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 $this->_writeCall('div', '', DOKU_LEXER_EXIT, $pos,$match,$handler);
                 break;
             case DOKU_LEXER_UNMATCHED:
-                $match = trim($match);
                 $tag_prev = end($this->stack);
                 switch ($tag_prev) {
                     case 'caption':
@@ -265,7 +264,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                     case 'th':
                     case 'td':
                                 // cdata --- use base() instead of $this->_writeCall()
-                                $handler->base($match, $state, $pos);
+                                $handler->base(trim($match), $state, $pos);
                                 break;
                 }
                 break;
