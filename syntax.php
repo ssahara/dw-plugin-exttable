@@ -2,7 +2,7 @@
 /**
  * DokuWiki Plugin ExtTab3 (Syntax component)
  *
- * Allows extended (MediaWiki-style) tables inside DokuWiki 
+ * Allows extended (MediaWiki-style) tables inside DokuWiki
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Satoshi Sahara <sahara.satoshi@gmail.com>
@@ -58,9 +58,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     }
 
     /**
-     * Exttab syntax match patterns for parser
-     * originally developed for the exttab2
-     * @author     disorde chang <disorder.chang@gmail.com>
+     * Exttab3 syntax match patterns for parser
+     * modified from original exttab2 code
      */
     function connectTo($mode) {
         $pluginMode = 'plugin_'.$this->getPluginName();
@@ -70,7 +69,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         $pluginMode = 'plugin_'.$this->getPluginName();
         $attrs = '[^\n\{\|\!]+'; // match pattern for attributes
 
-        // terminale = Exit Pattren: table end markup + twice \n
+        // terminale = Exit Pattren: table end markup + extra brank line
         $this->Lexer->addExitPattern(' *?\n\|\}(?=\n\n)', $pluginMode);
 
         // caption:      |+ attrs | caption
@@ -148,8 +147,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 list($tag, $attr) = $this->_resolve_markup($match);
                 switch ($tag_prev) {
                     case 'caption':
-                        array_pop($this->stack);
-                        $this->_writeCall($tag_prev, '', DOKU_LEXER_EXIT, $pos,$match,$handler); 
+                                msg($this->getPluginName().' Syntax ERROR: match='.hsc($match) ,-1);
+                                break;
                     case 'table':
                         switch ($tag) {
                             case 'table':
