@@ -6,7 +6,7 @@
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Satoshi Sahara <sahara.satoshi@gmail.com>
- * @date       2014-03-15
+ * @date       2014-03-25
  */
  
 // must be run within Dokuwiki
@@ -148,8 +148,6 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 list($tag, $attr) = $this->_resolve_markup($match);
                 switch ($tag_prev) {
                     case 'caption':
-                        // caption tag is to be closed at DOKU_LEXER_UNMATCHED
-                        // close caption tag anyway, likely no caption contents given
                         array_pop($this->stack);
                         $this->_writeCall($tag_prev, '', DOKU_LEXER_EXIT, $pos,$match,$handler); 
                     case 'table':
@@ -257,9 +255,6 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                     case 'caption':
                                 // cdata --- use base() instead of $this->_writeCall()
                                 $handler->base($match, $state, $pos);
-                                // close caption tag
-                                $oldtag = array_pop($this->stack);
-                                $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler); 
                                 break;
                     case 'table':
                                 array_push($this->stack, 'tr');
