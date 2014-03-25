@@ -74,7 +74,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         $this->Lexer->addExitPattern(' *?\n\|\}(?=\n\n)', $pluginMode);
 
         // caption:      |+ attrs | caption
-        $this->Lexer->addPattern("\n\|\+(?:$attrs\|(?!\|))?", $pluginMode);
+        $this->Lexer->addPattern("\n\|\+ *(?:$attrs\|(?!\|))?", $pluginMode);
         // table row:    |- attrs
         $this->Lexer->addPattern(' *?\n\|\-+[^\n]*', $pluginMode);
         // table start:  {| attrs
