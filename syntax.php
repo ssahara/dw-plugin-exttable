@@ -1,443 +1,392 @@
 <?php
-//ini_set("display_errors", "On"); // for debugging
 /**
- * exttab2-Plugin: Parses extended tables (like MediaWiki) 
+ * DokuWiki Plugin ExtTab3 (Syntax component)
+ *
+ * Allows extended (MediaWiki-style) tables inside DokuWiki
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author     disorde chang <disorder.chang@gmail.com>
- * @date       2010-08-28
+ * @author     Satoshi Sahara <sahara.satoshi@gmail.com>
+ * @date       2014-03-25
  */
  
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
- 
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'syntax.php');
  
-/**
- * All DokuWiki plugins to extend the parser/rendering mechanism
- * need to inherit from this class
- */
-class syntax_plugin_exttab2 extends DokuWiki_Syntax_Plugin {
- 
-  var $stack = array();
- 
-  function syntax_plugin_exttab2(){
-    define("EXTTAB2_TABLE", 0);
-    define("EXTTAB2_CAPTION", 1);
-    define("EXTTAB2_TR", 2);
-    define("EXTTAB2_TD", 3);
-    define("EXTTAB2_TH", 4);
-    $this->tagsmap = array(
-                  EXTTAB2_TABLE=>   array("table", "", "\n" ),
-                  EXTTAB2_CAPTION=> array("caption", "\t", "\n" ),
-                  EXTTAB2_TR=>      array("tr", "\t", "\n" ),
-                  EXTTAB2_TD=>      array("td", "\t"."\t", "\n" ),
-                  EXTTAB2_TH=>      array("th", "\t"."\t", "\n" ),
- 
-/* // DOKU constant not work when preview
-                  EXTTAB2_TABLE=>   array("table", "", DOKU_LF ),
-                  EXTTAB2_CAPTION=> array("caption", DOKU_TAB, DOKU_LF ),
-                  EXTTAB2_TR=>      array("tr", DOKU_TAB, DOKU_LF ),
-                  EXTTAB2_TD=>      array("td", DOKU_TAB.DOKU_TAB, DOKU_LF ),
-                  EXTTAB2_TH=>      array("th", DOKU_TAB.DOKU_TAB, DOKU_LF ),
-*/                  );
+class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
-    /* attribute whose value is a single word */
-    $this->attrsmap = array(
-      # table attributes
-      # simple ones (value is a single word)
-      'align', 'border', 'cellpadding', 'cellspacing', 'frame', 'rules', 'width', 'class', 'dir', 'id', 'lang', 'xml:lang',
-      # more complex ones (value is a string or style)
-      'bgcolor', 'summary', 'title', 'style',
-      # additional tr, thead, tbody, tfoot attributes
-      'char', 'charoff', 'valign',
-      # additional td attributes
-      'abbr', 'colspan', 'axis', 'headers', 'rowspan', 'scope',
-      'height', 'width', 'nowrap',
-    );
-  }
- 
-  function getInfo(){
-    return array(
-          'author' => 'Disorder Chang',
-          'email'  => 'disorder.chang@gmail.com',
-          'date'   => '2010-08-28',
-          'name'   => 'exttab2 Plugin',
-          'desc'   => 'parses MediaWiki-like tables',
-          'url'    => 'http://www.dokuwiki.org/plugin:exttab2',
-    );
-  }
- 
-  function getType(){
-    return 'container';
-  }
- 
-  function getPType(){
-    return 'block';
-  }
- 
-  function getAllowedTypes() { 
-    return array('container', 'formatting', 'substition', 'disabled', 'protected'); 
-  }
- 
-  function getSort(){ 
-    return 50; 
-  }
- 
-  function connectTo($mode) { 
-     $this->Lexer->addEntryPattern('\n\{\|[^\n]*',$mode,'plugin_exttab2'); 
-  }
- 
-  function postConnect() { 
-    $para = "[^\|\n\[\{\!]+"; // parametes
- 
-    // caption: |+ params | caption
-    $this->Lexer->addPattern("\n\|\+(?:$para\|(?!\|))?",'plugin_exttab2');
- 
-    // row: |- params
-    $this->Lexer->addPattern('\n\|\-[^\n]*','plugin_exttab2');
- 
-    // table open
-    $this->Lexer->addPattern('\n\{\|[^\n]*','plugin_exttab2');
- 
-    // table close
-    $this->Lexer->addPattern('\n\|\}','plugin_exttab2');
- 
-    // header
-    $this->Lexer->addPattern("(?:\n|\!)\!(?:$para\|(?!\|))?",'plugin_exttab2');
- 
-    //cell
-    $this->Lexer->addPattern("(?:\n|\|)\|(?:$para\|(?!\|))?",'plugin_exttab2');
- 
-    //end
-//    $this->Lexer->addExitPattern('\n','plugin_exttab2'); 
-//    $this->Lexer->addExitPattern("(?<!\|)\n",'plugin_exttab2'); // not work
-    $this->Lexer->addExitPattern("\n(?=\n)",'plugin_exttab2'); 
-  }
- 
-  /**
-   * Handle the match
-   */
-  function handle($match, $state, $pos, &$handler){
-    if($state == DOKU_LEXER_EXIT) {
-      return array($state, "end");
-    }
-    else if($state == DOKU_LEXER_UNMATCHED){
-      return array($state, "", $match);
-    }
-    else{
-      $para = "[^\|\n]+"; // parametes
-      if(preg_match ( '/\{\|([^\n]*)/', $match, $m)){ // table open
-        $func = "table_open";
-        $params = $this->_cleanAttrString($m[1]);
-        return array($state, $func, $params);
-      }
-      else if($match == "\n|}"){ // table close
-        $func = "table_close";
-        $params = "";
-        return array($state, $func, $params);
-      }
-      else if(preg_match ("/^\n\|\+(?:(?:($para)\|)?)$/", $match, $m)){ // caption
-        $func = "caption";
-        $params = $this->_cleanAttrString($m[1]);
-        return array($state, $func, $params);
-      }
-      else if(preg_match ( '/\|-([^\n]*)/', $match, $m)){ // row
-        $func = "row";
-        $params = $this->_cleanAttrString($m[1]);
-        return array($state, $func, $params);
-      }
-      else if(preg_match("/^(?:\n|\!)\!(?:(?:([^\|\n\!]+)\|)?)$/", $match, $m)){ // header
-        $func = "header";
-        $params = $this->_cleanAttrString($m[1]);
-        return array($state, $func, $params);
-      }
-      else if(preg_match("/^(?:\n|\|)\|(?:(?:($para)\|)?)$/", $match, $m)){ // cell
-        $func = "cell";
-        $params = $this->_cleanAttrString($m[1]);
-        return array($state, $func, $params);
-      }
-      else{
-        die("what? ".$match);  // for debugging
-      }
-    }
-  }
- 
-  /**
-   * Create output
-   */
- 
-  function render($mode, &$renderer, $data) {
- 
-    if($mode == 'xhtml'){
-      list($state, $func, $params) = $data;
- 
-      switch ($state) {
-        case DOKU_LEXER_UNMATCHED :  
-          $r = $renderer->_xmlEntities($params); 
-          $renderer->doc .= $r; 
-          break;
-        case DOKU_LEXER_ENTER :
-        case DOKU_LEXER_MATCHED:
-          $r = $this->$func($params);
-          $renderer->doc .= $r;
-          break;
-        case DOKU_LEXER_EXIT :       
-          $r = $this->$func($params);
-          $renderer->doc .= $r; 
-          break;
-      }
-      return true;
- 
-    }
-    return false;
-  }
- 
- 
-  /**
-   * Make the attribute string safe to avoid XSS attacks.
-   * WATCH OUT FOR
-   * - event handlers (e.g. onclick="javascript:...", etc)
-   * - CSS (e.g. background: url(javascript:...))
-   * - closing the tag and opening a new one
-   * WHAT IS DONE
-   * - turn all whitespace into ' ' (to protect from removal)
-   * - remove all non-printable characters and < and >
-   * - parse and filter attributes using a whitelist
-   * - styles with 'url' in them are altogether removed
-   * (I know this is brutally aggressive and doesn't allow
-   * some safe stuff, but better safe than sorry.)
-   * NOTE: Attribute values MUST be in quotes now.
-   */
-  function _cleanAttrString($attr=""){
-    if (is_null($attr)) return NULL;
-    # Keep spaces simple
-    $attr = trim(preg_replace('/\s+/', ' ', $attr));
-    # Remove non-printable characters and angle brackets
-    $attr = preg_replace('/[<>[:^print:]]+/', '', $attr);
-    # This regular expression parses the value of an attribute and
-    # the quotation marks surrounding it.
-    # It assumes that all quotes within the value itself must be escaped, 
-    # which is not technically true.
-    # To keep the parsing simple (no look-ahead), the value must be in 
-    # quotes.
-    $val = "([\"'`])(?:[^\\\\\"'`]|\\\\.)*\g{-1}";
+    var $stack = array();  // stack of current open tag - used by handle() method
+    var $tableDepth;       // table depth counter
+    var $tagsmap  = array();
+    var $attrsmap = array();
 
-    $nattr = preg_match_all("/(\w+)\s*=\s*($val)/", $attr, $matches, PREG_SET_ORDER);
-    if (!$nattr) return NULL;
+    function __construct() {
+        $this->tableDepth = 0;
 
-    $clean_attr = '';
-    for ($i = 0; $i < $nattr; ++$i) {
-      $m = $matches[$i];
-      $attrname = strtolower($m[1]);
-      $attrval  = $m[2];
-      # allow only recognized attributes
-      if (in_array($attrname, $this->attrsmap, true)) {
-        # make sure that style attributes do not have a url in them
-        if ($attrname != 'style' ||
-            (stristr($attrval, 'url'   ) === FALSE &&
-             stristr($attrval, 'import') === FALSE))
-        {
-          $clean_attr .= " $attrname=$attrval";
-        }
-      }
+        // define name, prefix and postfix of tags
+        $this->tagsmap = array(
+                'table'   => array("", "\n" ),        // table start  : {|
+                '/table'  => array("", ""),           // table end    : |}
+                'caption' => array("\t", "\n" ),      // caption      : |+
+                'tr'      => array("\t", "\n" ),      // table row    : |-
+                'th'      => array("\t"."\t", "\n" ), // table header : !
+                'td'      => array("\t"."\t", "\n" ), // table data   : |
+                'div'     => array("", "\n" ),        // wrapper
+        );
+
+        // define allowable attibutes for table tags
+        $this->attrsmap = array(
+            # simple ones (value is a single word)
+            'align', 'border', 'cellpadding', 'cellspacing', 'frame', 
+            'rules', 'width', 'class', 'dir', 'id', 'lang', 'xml:lang',
+            # more complex ones (value is a string or style)
+            'bgcolor', 'summary', 'title', 'style',
+            # additional tr, thead, tbody, tfoot attributes
+            'char', 'charoff', 'valign',
+            # additional td attributes
+            'abbr', 'colspan', 'axis', 'headers', 'rowspan', 'scope',
+            'height', 'width', 'nowrap',
+        );
     }
 
-    return $clean_attr;
-  }
- 
-  function _attrString($attr="", $before=" "){
-    if(is_null($attr) || trim($attr)=="") $attr = "";
-    else $attr = $before.trim($attr);
-    return $attr;
-  }
- 
-  var $tagsmap = array();
- 
-  function _starttag($tag, $params=NULL, $before="", $after=""){
-    $tagstr = $this->tagsmap[$tag][0];
-    $before = $this->tagsmap[$tag][1].$before;
-    $after = $this->tagsmap[$tag][2].$after;
-    $r = $before."<".$tagstr.$this->_attrString($params).">". $after;
-    return $r;
-  }
- 
-  function _endtag($tag, $before="", $after=""){
-    $tagstr = $this->tagsmap[$tag][0];
-    $before = $this->tagsmap[$tag][1].$before;
-    $after = $this->tagsmap[$tag][2].$after;
- 
-    $r = $before."</".$tagstr.">". $after;
-    return $r;
-  }
- 
-  function table_open($params=NULL){
-    $r .= $this->_closetags(EXTTAB2_TABLE);
-    $r .= $this->_starttag(EXTTAB2_TABLE, $params);
-    $this->stack[] = EXTTAB2_TABLE;
-    return $r;
-  }
- 
-  function table_close($params=NULL){
-    $t = end($this->stack);
-    switch($t){
-      case EXTTAB2_TABLE:
-        array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
-        $r .= $this->_starttag(EXTTAB2_TR, $params);
-        $r .= $this->_starttag(EXTTAB2_TD, $params);
-        break;
-      case EXTTAB2_CAPTION:
-        $r .= $this->_endtag(EXTTAB2_CAPTION);
-        array_pop($this->stack);
-        array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
-        $r .= $this->_starttag(EXTTAB2_TR, $params);
-        $r .= $this->_starttag(EXTTAB2_TD, $params);
-        break;
-      case EXTTAB2_TR:
-        array_push($this->stack, EXTTAB2_TD);
-        $r = $this->_starttag(EXTTAB2_TD, $params);
-        break;
-      case EXTTAB2_TD:
-      case EXTTAB2_TH:
-        break;
+    function getType(){  return 'container';}
+    function getPType(){ return 'block';}
+    function getSort(){  return Doku_Parser_Mode_table-1; } // =59
+    function getAllowedTypes() { 
+        return array('container', 'formatting', 'substition', 'disabled', 'protected'); 
     }
- 
-    while(($t = end($this->stack)) != EXTTAB2_TABLE){
-      $r .= $this->_endtag($t);
-      array_pop($this->stack);
+
+    /**
+     * Exttab3 syntax match patterns for parser
+     * modified from original exttab2 code
+     */
+    function connectTo($mode) {
+        $pluginMode = 'plugin_'.$this->getPluginName();
+        $this->Lexer->addEntryPattern('\n\{\|[^\n]*',$mode, $pluginMode); 
     }
-    array_pop($this->stack);
-    $r .= $this->_endtag(EXTTAB2_TABLE);
-    return $r;   
- 
-  }
- 
-  function end($params=NULL){
-    while(!empty($this->stack)){
-      $r .= $this->table_close();
+    function postConnect() {
+        $pluginMode = 'plugin_'.$this->getPluginName();
+        $attrs = '[^\n\{\|\!]+'; // match pattern for attributes
+
+        // terminale = Exit Pattren: table end markup + extra brank line
+        $this->Lexer->addExitPattern(' *?\n\|\}(?=\n\n)', $pluginMode);
+
+        // caption:      |+ attrs | caption
+        $this->Lexer->addPattern("\n\|\+ *(?:$attrs\|(?!\|))?", $pluginMode);
+        // table row:    |- attrs
+        $this->Lexer->addPattern(' *?\n\|\-+[^\n]*', $pluginMode);
+        // table start:  {| attrs
+        $this->Lexer->addPattern(' *?\n\{\|[^\n]*', $pluginMode);
+        // table end:    |}
+        $this->Lexer->addPattern(' *?\n\|\}', $pluginMode);
+        // table header: ! attrs |
+        $this->Lexer->addPattern("(?: *?\n|\!)\!(?:$attrs\|(?!\|))?", $pluginMode);
+        // table data:   | attrs |
+        $this->Lexer->addPattern("(?: *?\n|\|)\|(?:$attrs\|(?!\|))?", $pluginMode);
     }
-    return $r;
-  }
- 
-  function caption($params=NULL){
-    if(($r = $this->_closetags(EXTTAB2_CAPTION)) === FALSE){
-      return ""; 
+
+
+    /**
+     * helper function to simplify writing plugin calls to the instruction list
+     * first three arguments are passed to function render as $data
+     */
+    protected function _writeCall($tag, $attr, $state, $pos, $match, &$handler) {
+        $handler->addPluginCall($this->getPluginName(),
+            array($state, $tag, $attr), $state, $pos, $match);
     }
-    $r .= $this->_starttag(EXTTAB2_CAPTION, $params);
-    $this->stack[] = EXTTAB2_CAPTION;
-    return $r;
-  }
- 
-  function row($params=NULL){
-    $r .= $this->_closetags(EXTTAB2_TR);
-    $r .= $this->_starttag(EXTTAB2_TR, $params);
-     $this->stack[] = EXTTAB2_TR;
-    return $r;
-  }
- 
-  function header($params=NULL){
-    $r .= $this->_closetags(EXTTAB2_TH);
-    $r .= $this->_starttag(EXTTAB2_TH, $params);
-    $this->stack[] = EXTTAB2_TH;
-    return $r;
-  }
- 
-  function cell($params=NULL){
-    $r .= $this->_closetags(EXTTAB2_TD);
-    $r .= $this->_starttag(EXTTAB2_TD, $params);
-    $this->stack[] = EXTTAB2_TD;
-    return $r;
-  }
- 
-  function _closetags($tag){
-    $r = "";
-    switch($tag){
-      case EXTTAB2_TD:
-      case EXTTAB2_TH:
-        $t = end($this->stack);
- 
-        switch($t){
-          case EXTTAB2_TABLE:
-            array_push($this->stack, EXTTAB2_TR);
-            $r .= $this->_starttag(EXTTAB2_TR, $params);
-            break;
-          case EXTTAB2_CAPTION:
-            $r .= $this->_endtag(EXTTAB2_CAPTION);
-            array_pop($this->stack);
-            array_push($this->stack, EXTTAB2_TR);
-            $r .= $this->_starttag(EXTTAB2_TR, $params);
-            break;
-          case EXTTAB2_TR:
-            break;
-          case EXTTAB2_TD:
-          case EXTTAB2_TH:
-            $r .= $this->_endtag($t);
-            array_pop($this->stack);
-            break;
+
+    /**
+     * helper function for exttab syntax translation to html
+     *
+     * @param string $match       matched string
+     * @return array              tag name, and attributes
+     */
+    protected function _resolve_markup($match='') {
+        $markup = substr(trim($match), 0, 2);
+        if ($markup       == '{|') { // table_start
+            return array('table', substr($match, 2));
+        } elseif ($markup == '|}') { // table_end
+            return array('/table', '');
+        } elseif ($markup == '|+') { // table_caption
+            return array('caption', trim(substr($match, 2), '|'));
+        } elseif ($markup == '|-') { // table_row
+            return array('tr', trim(substr($match, 2), '-'));
         }
-        break;
-      case EXTTAB2_TR:
-        $t = end($this->stack);
- 
-        switch($t){
-          case EXTTAB2_TABLE:
-            break;
-          case EXTTAB2_CAPTION:
-            $r .= $this->_endtag(EXTTAB2_CAPTION);
-            array_pop($this->stack);
-            break;
-          case EXTTAB2_TR:
-            $r .= $this->_starttag(EXTTAB2_TD);
-            $r .= $this->_endtag(EXTTAB2_TD);
-            $r .= $this->_endtag(EXTTAB2_TR);
-            array_pop($this->stack);
-            break;
-          case EXTTAB2_TD:
-          case EXTTAB2_TH:
-            $r .= $this->_endtag($t);
-            $r .= $this->_endtag(EXTTAB2_TR);
-            array_pop($this->stack);
-            array_pop($this->stack);
-            break;
+        $markup = substr(trim($match), 0, 1);
+        if ($markup       == '!') {  // table_header
+            return array('th', trim($match, '!|'));
+        } elseif ($markup == '|') {  // table_data
+            return array('td', trim($match, '|'));
+        } else {
+            msg($this->getPluginName().' ERROR: unknown syntax: '.hsc($match) ,-1);
+            return false;
         }
-        break;        
-      case EXTTAB2_TABLE:
-        $t = end($this->stack);
-        if($t === FALSE) break;
-        switch($t){
-          case EXTTAB2_TABLE:
-            array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
-            $r .= $this->_starttag(EXTTAB2_TR, $params);
-            $r .= $this->_starttag(EXTTAB2_TD, $params);
-            break;
-          case EXTTAB2_CAPTION:
-            $r .= $this->_endtag(EXTTAB2_CAPTION);
-            array_pop($this->stack);
-            array_push($this->stack, EXTTAB2_TR, EXTTAB2_TD);
-            $r .= $this->_starttag(EXTTAB2_TR, $params);
-            $r .= $this->_starttag(EXTTAB2_TD, $params);
-            break;
-          case EXTTAB2_TR:
-            array_push($this->stack, EXTTAB2_TD);
-            $r = $this->_starttag(EXTTAB2_TD, $params);
-            break;
-          case EXTTAB2_TD:
-          case EXTTAB2_TH:
-            break;
-        }
-        break;
-      case EXTTAB2_CAPTION:
-        $t = end($this->stack);
-        if($t==EXTTAB2_TABLE){
-        }
-        else{
-          return false ; // ignore this, or should echo error?
-        }
-        break;
     }
-    return $r;
-  } 
+
+
+    /**
+     * Handle the match
+     */
+    function handle($match, $state, $pos, &$handler) {
+
+        // msg('handle: state='.$state.' match="'.str_replace("\n","_",$match).'"', 0);
+
+        switch ($state) {
+            case DOKU_LEXER_ENTER:
+                // wrapper open
+                $this->_writeCall('div', 'class="exttab"', DOKU_LEXER_ENTER, $pos,$match,$handler);
+                // table start
+                list($tag, $attr) = $this->_resolve_markup($match);
+                array_push($this->stack, $tag);
+                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                $this->tableDepth = $this->tableDepth +1; // increment table depth counter
+                break;
+            case DOKU_LEXER_MATCHED:
+                $tag_prev = end($this->stack);
+                list($tag, $attr) = $this->_resolve_markup($match);
+                switch ($tag_prev) {
+                    case 'caption':
+                                $oldtag = array_pop($this->stack);
+                                $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+                    case 'table':
+                        switch ($tag) {
+                            case 'table':
+                                msg($this->getPluginName().' Syntax ERROR: match='.hsc($match) ,-1);
+                                break;
+                            case 'caption':
+                            case 'tr':
+                                array_push($this->stack, $tag);
+                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                break;
+                            case 'th':
+                            case 'td':
+                                array_push($this->stack, 'tr');
+                                $this->_writeCall('tr', '', DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                array_push($this->stack, $tag);
+                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                break;
+                            case '/table':
+                                array_pop($this->stack);
+                                $this->_writeCall('table', '', DOKU_LEXER_EXIT, $pos,$match,$handler);
+                                $this->tableDepth = $this->tableDepth -1;
+                                break;
+                        }
+                        break;
+                    case 'tr':
+                        switch ($tag) {
+                            case 'table':
+                            case 'caption':
+                                msg($this->getPluginName().' Syntax ERROR: match='.hsc($match) ,-1);
+                                break;
+                            case 'tr':
+                                $oldtag = array_pop($this->stack);
+                                $this->_writeCall($oldtag, '', DOKU_LEXER_EXIT, $pos,$match,$handler); 
+                                array_push($this->stack, $tag);
+                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                break;
+                            case 'th':
+                            case 'td':
+                                array_push($this->stack, $tag);
+                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                break;
+                            case '/table':
+                                do { // rewind table
+                                    $oldtag = array_pop($this->stack);
+                                    $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+                                } while ($oldtag != 'table');
+                                $this->tableDepth = $this->tableDepth -1;
+                                break;
+                        }
+                        break;
+                    case 'th':
+                    case 'td':
+                        switch ($tag) {
+                            case 'table':   // a table within a table
+                                array_push($this->stack, $tag);
+                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                $this->tableDepth = $this->tableDepth +1;
+                                break;
+                            case 'caption':
+                                msg($this->getPluginName().' Syntax ERROR: match='.hsc($match) ,-1);
+                                break;
+                            case 'tr':
+                                do { // rewind old row prior to start new row
+                                    $oldtag = array_pop($this->stack);
+                                    $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+                                } while ($oldtag != 'tr');
+                                array_push($this->stack, $tag);
+                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                break;
+                            case 'th':
+                            case 'td':
+                                $oldtag = array_pop($this->stack);
+                                $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler); 
+                                array_push($this->stack, $tag);
+                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                break;
+                            case '/table':
+                                do { // rewind table
+                                    $oldtag = array_pop($this->stack);
+                                    $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+                                } while ($oldtag != 'table');
+                                $this->tableDepth = $this->tableDepth -1;
+                                break;
+                        }
+                        break;
+                }
+                break;
+            case DOKU_LEXER_EXIT:
+                if ($this->tableDepth > 1) {
+                    msg($this->getPluginName().': missing table end markup "|}" '.$this->tableDepth, -1);
+                }
+                while ($tag = array_pop($this->stack)) {
+                    $this->_writeCall($tag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+                }
+                $this->tableDepth = 0;
+                // wrapper close
+                $this->_writeCall('div', '', DOKU_LEXER_EXIT, $pos,$match,$handler);
+                break;
+            case DOKU_LEXER_UNMATCHED:
+                $tag_prev = end($this->stack);
+                switch ($tag_prev) {
+                    case 'caption':
+                                // cdata --- use base() instead of $this->_writeCall()
+                                $handler->base($match, $state, $pos);
+                                break;
+                    case 'table':
+                                array_push($this->stack, 'tr');
+                                $this->_writeCall('tr','',DOKU_LEXER_ENTER, $pos,$match,$handler);
+                    case 'tr':
+                                array_push($this->stack, 'td');
+                                $this->_writeCall('td','',DOKU_LEXER_ENTER, $pos,$match,$handler);
+                    case 'th':
+                    case 'td':
+                                // cdata --- use base() instead of $this->_writeCall()
+                                $handler->base(trim($match), $state, $pos);
+                                break;
+                }
+                break;
+        }
+    }
+
+
+   /**
+    * Create output
+    */
+    function render($format, &$renderer, $data) {
+        if (empty($data)) return false;
+
+        switch ($format) {
+            case 'xhtml' : return $this->render_xhtml($renderer, $data);
+            default:
+                return true;
+        }
+        return false;
+    }
+
+    protected function render_xhtml(&$renderer, $data) {
+        //list($tag, $state, $match) = $data;
+        list($state, $tag, $attr) = $data;
+
+        switch ( $state ) {
+            case DOKU_LEXER_ENTER:    // open tag
+                $renderer->doc.= $this->_open($tag, $attr);
+                break;
+            case DOKU_LEXER_MATCHED:  // defensive, shouldn't occur
+            case DOKU_LEXER_UNMATCHED:
+                $renderer->cdata($tag);
+                break;
+            case DOKU_LEXER_EXIT:     // close tag
+                $renderer->doc.= $this->_close($tag);
+                break;
+        }
+    }
+
+    /**
+     * open a exttab tag, used by render_xhtml()
+     *
+     * @param  string $tag        'table','caption','tr','th' or 'td'
+     * @param  string $attr       attibutes of tag element
+     * @return string             html used to open the tag
+     */
+    protected function _open($tag, $attr=NULL) {
+        $before = $this->tagsmap[$tag][0];
+        $after  = $this->tagsmap[$tag][1];
+        $attr = $this->_cleanAttrString($attr, $this->attrsmap);
+        return $before.'<'.$tag.$attr.'>'.$after;
+    }
+
+    /**
+     * close a exttab tag, used by render_xhtml()
+     *
+     * @param  string $tag        'table','caption','tr','th' or 'td'
+     * @return string             html used to close the tag
+     */
+    protected function _close($tag) {
+        $before = $this->tagsmap[$tag][0];
+        $after  = $this->tagsmap[$tag][1];
+        return $before.'</'.$tag.'>'.$after;
+    }
+
+
+
+    /**
+     * Make the attribute string safe to avoid XSS attacks.
+     *
+     * @author Ashish Myles <marcianx@gmail.com>
+     *
+     * @param  string $attr           attibutes to be checked
+     * @param  array  $allowed_keys   allowed attribute name map
+     *                                ex: array('border','bgcolor');
+     * @return string                 cleaned attibutes
+     *
+     * WATCH OUT FOR
+     * - event handlers (e.g. onclick="javascript:...", etc)
+     * - CSS (e.g. background: url(javascript:...))
+     * - closing the tag and opening a new one
+     * WHAT IS DONE
+     * - turn all whitespace into ' ' (to protect from removal)
+     * - remove all non-printable characters and < and >
+     * - parse and filter attributes using a whitelist
+     * - styles with 'url' in them are altogether removed
+     * (I know this is brutally aggressive and doesn't allow
+     * some safe stuff, but better safe than sorry.)
+     * NOTE: Attribute values MUST be in quotes now.
+     */
+    function _cleanAttrString($attr='', $allowed_keys) {
+        if (is_null($attr)) return NULL;
+        # Keep spaces simple
+        $attr = trim(preg_replace('/\s+/', ' ', $attr));
+        # Remove non-printable characters and angle brackets
+        $attr = preg_replace('/[<>[:^print:]]+/', '', $attr);
+        # This regular expression parses the value of an attribute and
+        # the quotation marks surrounding it.
+        # It assumes that all quotes within the value itself must be escaped, 
+        # which is not technically true.
+        # To keep the parsing simple (no look-ahead), the value must be in 
+        # quotes.
+        $val = "([\"'`])(?:[^\\\\\"'`]|\\\\.)*\g{-1}";
+
+        $nattr = preg_match_all("/(\w+)\s*=\s*($val)/", $attr, $matches, PREG_SET_ORDER);
+        if (!$nattr) return NULL;
+
+        $clean_attr = '';
+        for ($i = 0; $i < $nattr; ++$i) {
+            $m = $matches[$i];
+            $attrname = strtolower($m[1]);
+            $attrval  = $m[2];
+            # allow only recognized attributes
+            if (in_array($attrname, $allowed_keys, true)) {
+                # make sure that style attributes do not have a url in them
+                if ($attrname != 'style' ||
+                      (stristr($attrval, 'url') === FALSE &&
+                      stristr($attrval, 'import') === FALSE)) {
+                    $clean_attr.= " $attrname=$attrval";
+                }
+            }
+        }
+        return $clean_attr;
+    }
+
 }
- 
-?>

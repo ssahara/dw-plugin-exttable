@@ -1,17 +1,26 @@
-Extended Table Syntax2 Plugin
-=============================
+DokuWiki plugin ExtTab3
+=======================
 
-Author disOrder Chang
+The third trial to implement extended (MediaWiki-style) table syntax in DokuWiki
 
-Another MediaWiki style tables inside DokuWiki
+Syntax
+------
 
-@see http://www.dokuwiki.org/plugin:exttab2
+http://www.mediawiki.org/wiki/Help:Tables
 
-Note: This repository is only for better accessibility for source.
+| markup | description |
+|:--     |:--          |
+|<code>{&#124;</code>  | table start |
+|<code>{+</code>       | table caption |
+|<code>{-</code>       | table row |
+|<code>!</code>        | table header |
+|<code>&#124;</code>   | table data |
+|<code>&#124;}-</code> | table end |
 
+----
+Licensed under the GNU Public License (GPL) version 2
 
-Revision History
-2010-08-28 0.3.0 (hopefully) fixed XSS vulnerability (Ashish Myles)
-2006-11-06 0.2.0 support nested table and many more ...
-2006-10-04 0.1.0 Initial release
+More infomation is available:
+  * http://www.dokuwiki.org/plugin:exttab3
 
+(c) 2014 Satoshi Sahara \<sahara.satoshi@gmail.com>
