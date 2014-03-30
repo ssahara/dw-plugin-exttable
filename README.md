@@ -15,7 +15,7 @@ http://www.mediawiki.org/wiki/Help:Tables
 |<code>{-</code>       | table row |
 |<code>!</code>        | table header |
 |<code>&#124;</code>   | table data |
-|<code>&#124;}-</code> | table end |
+|<code>&#124;}</code>  | table end |
 
 ----
 Licensed under the GNU Public License (GPL) version 2
