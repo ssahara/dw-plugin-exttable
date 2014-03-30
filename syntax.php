@@ -147,8 +147,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 list($tag, $attr) = $this->_resolve_markup($match);
                 switch ($tag_prev) {
                     case 'caption':
-                                msg($this->getPluginName().' Syntax ERROR: match='.hsc($match) ,-1);
-                                break;
+                                $oldtag = array_pop($this->stack);
+                                $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
                     case 'table':
                         switch ($tag) {
                             case 'table':

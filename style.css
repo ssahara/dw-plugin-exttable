@@ -4,7 +4,10 @@
 div.exttab p {
     margin-bottom: 0;
 }
-div.exttab ul, ol {
+div.exttab ol {
+    padding-left: 0em;
+}
+div.exttab ul {
     padding-left: 0em;
 }
 
