@@ -8,6 +8,14 @@ Syntax
 
 http://www.mediawiki.org/wiki/Help:Tables
 
+| markup | description |
+|:--     |:--          |
+|<code>{&#124;</code>  | table start |
+|<code>{+</code>       | table caption |
+|<code>{-</code>       | table row |
+|<code>!</code>        | table header |
+|<code>&#124;</code>   | table data |
+|<code>&#124;}-</code> | table end |
 
 ----
 Licensed under the GNU Public License (GPL) version 2
