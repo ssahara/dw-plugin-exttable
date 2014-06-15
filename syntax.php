@@ -263,7 +263,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                     case 'th':
                     case 'td':
                                 // cdata --- use base() instead of $this->_writeCall()
-                                $handler->base(trim($match), $state, $pos);
+                                $handler->base($match, $state, $pos);
                                 break;
                 }
                 break;
