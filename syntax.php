@@ -16,10 +16,10 @@ require_once(DOKU_PLUGIN.'syntax.php');
  
 class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
-    var $stack = array();  // stack of current open tag - used by handle() method
-    var $tableDepth;       // table depth counter
-    var $tagsmap  = array();
-    var $attrsmap = array();
+    protected $stack = array();  // stack of current open tag - used by handle() method
+    protected $tableDepth;       // table depth counter
+    protected $tagsmap  = array();
+    protected $attrsmap = array();
 
     function __construct() {
         $this->tableDepth = 0;
@@ -128,7 +128,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     /**
      * Handle the match
      */
-    function handle($match, $state, $pos, &$handler) {
+    function handle($match, $state, $pos, Doku_Handler $handler) {
 
         // msg('handle: state='.$state.' match="'.str_replace("\n","_",$match).'"', 0);
 
@@ -274,7 +274,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
    /**
     * Create output
     */
-    function render($format, &$renderer, $data) {
+    function render($format, Doku_Renderer $renderer, $data) {
         if (empty($data)) return false;
 
         switch ($format) {
