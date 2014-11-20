@@ -6,7 +6,7 @@
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Satoshi Sahara <sahara.satoshi@gmail.com>
- * @date       2014-03-25
+ * @date       2014-11-20
  */
  
 // must be run within Dokuwiki
@@ -52,7 +52,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
     function getType(){  return 'container';}
     function getPType(){ return 'block';}
-    function getSort(){  return Doku_Parser_Mode_table-1; } // =59
+    function getSort(){  return 59; } // = Doku_Parser_Mode_table-1
     function getAllowedTypes() { 
         return array('container', 'formatting', 'substition', 'disabled', 'protected'); 
     }
@@ -67,7 +67,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     }
     function postConnect() {
         $pluginMode = 'plugin_'.$this->getPluginName();
-        $attrs = '[^\n\{\|\!]+'; // match pattern for attributes
+        $attrs = '[^\n\{\|\!\[]+'; // match pattern for attributes
 
         // terminale = Exit Pattren: table end markup + extra brank line
         $this->Lexer->addExitPattern(' *?\n\|\}(?=\n\n)', $pluginMode);
