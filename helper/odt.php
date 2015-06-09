@@ -11,23 +11,22 @@ if(!defined('DOKU_INC')) die();
 class helper_plugin_exttab3_odt extends DokuWiki_Plugin {
 
     function render(Doku_Renderer $renderer, $data) {
-        $properties = array ();
+        $properties = array();
 
         // Return if installed ODT plugin version is too old.
-        if ( method_exists ($renderer, 'getODTProperties') === false ||
-             method_exists ($renderer, '_odtTableAddColumnUseProperties') === false ) {
-            return;
+        if ( method_exists($renderer, 'getODTProperties') == false ||
+             method_exists($renderer, '_odtTableAddColumnUseProperties') == false ) {
+            return false;
         }
 
         //list($tag, $state, $match) = $data;
         list($state, $tag, $attr) = $data;
 
         // Get style content
-        preg_match ('/style=".*"/', $attr, $matches);
-        $style = "";
-        if ( empty ($matches [0]) === false ) {
-            $style = substr ($matches [0], 6);
-            $style = trim ($style, ' "');
+        $style = '';
+        if (preg_match('/style=".*"/', $attr, $matches) === 1) {
+            $style = substr($matches[0], 6);
+            $style = trim($style, ' "');
         }
 
         switch ( $state ) {
@@ -35,13 +34,13 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin {
                 switch ($tag) {
                     case 'table':
                         // Get CSS properties for ODT export.
-                        $renderer->getODTProperties ($properties, 'table', 'dokuwiki exttab3', $style);
+                        $renderer->getODTProperties($properties, 'table', 'dokuwiki exttab3', $style);
 
                         $renderer->_odtTableOpenUseProperties($properties);
                         break;
                     case 'caption':
                         // Get CSS properties for ODT export.
-                        $renderer->getODTProperties ($properties, 'caption', 'dokuwiki exttab3', $style);
+                        $renderer->getODTProperties($properties, 'caption', 'dokuwiki exttab3', $style);
 
                         $renderer->_odtTableRowOpenUseProperties($properties);
 
@@ -50,20 +49,20 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin {
                         break;
                     case 'th':
                         // Get CSS properties for ODT export.
-                        $renderer->getODTProperties ($properties, 'th', 'dokuwiki exttab3', $style);
+                        $renderer->getODTProperties($properties, 'th', 'dokuwiki exttab3', $style);
 
                         $renderer->_odtTableHeaderOpenUseProperties($properties);
                         $renderer->_odtTableAddColumnUseProperties($properties);
                         break;
                     case 'tr':
                         // Get CSS properties for ODT export.
-                        $renderer->getODTProperties ($properties, 'tr', 'dokuwiki exttab3', $style);
+                        $renderer->getODTProperties($properties, 'tr', 'dokuwiki exttab3', $style);
                         
                         $renderer->_odtTableRowOpenUseProperties($properties);
                         break;
                     case 'td':
                         // Get CSS properties for ODT export.
-                        $renderer->getODTProperties ($properties, 'td', 'dokuwiki exttab3', $style);
+                        $renderer->getODTProperties($properties, 'td', 'dokuwiki exttab3', $style);
 
                         $renderer->_odtTableCellOpenUseProperties($properties);
                         break;
@@ -78,8 +77,8 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin {
                 //$renderer->doc.= $this->_close($tag);
                 switch ($tag) {
                     case 'table':
-                            //$renderer->table_close();
-                            $renderer->_odtTableClose();
+                        //$renderer->table_close();
+                        $renderer->_odtTableClose();
                         break;
                     case 'caption':
                         $renderer->tableheader_close();
