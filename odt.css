@@ -2,7 +2,7 @@
 ODT-Export Styles for the Exttab3 Plugin
 ********************************************************************/
 
-.dokuwiki th.exttab3 {
+.exttable th {
     border: 1pt solid __border__;
     padding: 0.5em;
     background-color: __background_alt__;
@@ -10,7 +10,7 @@ ODT-Export Styles for the Exttab3 Plugin
     font-weight:bold;
 }
 
-.dokuwiki td.exttab3 {
+.exttable td {
     border: 1pt solid __border__;
     padding: 0.5em;
 }

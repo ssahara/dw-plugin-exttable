@@ -30,7 +30,7 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin {
         }
 
         // class to get CSS Properties by $render->getODTProperties()
-        $class = 'dokuwiki exttab3';
+        $class = 'exttable';
 
         switch ( $state ) {
             case DOKU_LEXER_ENTER:    // open tag
