@@ -29,52 +29,42 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin {
             $style = trim($style, ' "');
         }
 
+        // class to get CSS Properties by $render->getODTProperties()
+        $class = 'dokuwiki exttab3';
+
         switch ( $state ) {
             case DOKU_LEXER_ENTER:    // open tag
+                // Get CSS properties for ODT export.
+                $renderer->getODTProperties($properties, $tag, $class, $style);
+
                 switch ($tag) {
                     case 'table':
-                        // Get CSS properties for ODT export.
-                        $renderer->getODTProperties($properties, 'table', 'dokuwiki exttab3', $style);
-
                         $renderer->_odtTableOpenUseProperties($properties);
                         break;
                     case 'caption':
-                        // Get CSS properties for ODT export.
-                        $renderer->getODTProperties($properties, 'caption', 'dokuwiki exttab3', $style);
-
                         $renderer->_odtTableRowOpenUseProperties($properties);
 
                         // Parameter 'colspan=0' indicates spann across all columns!
                         $renderer->_odtTableHeaderOpenUseProperties($properties, 0, 1);
                         break;
                     case 'th':
-                        // Get CSS properties for ODT export.
-                        $renderer->getODTProperties($properties, 'th', 'dokuwiki exttab3', $style);
-
                         $renderer->_odtTableHeaderOpenUseProperties($properties);
                         $renderer->_odtTableAddColumnUseProperties($properties);
                         break;
                     case 'tr':
-                        // Get CSS properties for ODT export.
-                        $renderer->getODTProperties($properties, 'tr', 'dokuwiki exttab3', $style);
-                        
                         $renderer->_odtTableRowOpenUseProperties($properties);
                         break;
                     case 'td':
-                        // Get CSS properties for ODT export.
-                        $renderer->getODTProperties($properties, 'td', 'dokuwiki exttab3', $style);
-
                         $renderer->_odtTableCellOpenUseProperties($properties);
                         break;
                 }
-                //$renderer->doc.= $this->_open($tag, $attr);
                 break;
             case DOKU_LEXER_MATCHED:  // defensive, shouldn't occur
+                break;
             case DOKU_LEXER_UNMATCHED:
                 $renderer->cdata($tag);
                 break;
             case DOKU_LEXER_EXIT:     // close tag
-                //$renderer->doc.= $this->_close($tag);
                 switch ($tag) {
                     case 'table':
                         //$renderer->table_close();
