@@ -1,7 +1,7 @@
 base   exttab3
 author Satoshi Sahara
 email  sahara.satoshi@gmail.com
-date   2014-11-20
+date   2015-06-11
 name   Extended Table Syntax 3
 desc   Allows extended (MediaWiki-style) tables inside DokuWiki
 url    https://www.dokuwiki.org/plugin:exttab3
