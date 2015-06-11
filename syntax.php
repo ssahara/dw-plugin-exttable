@@ -139,7 +139,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         switch ($state) {
             case DOKU_LEXER_ENTER:
                 // wrapper open
-                $this->_writeCall('div', 'class="exttab"', DOKU_LEXER_ENTER, $pos,$match,$handler);
+                $this->_writeCall('div', 'class="exttable"', DOKU_LEXER_ENTER, $pos,$match,$handler);
                 // table start
                 list($tag, $attr) = $this->_resolve_markup($match);
                 array_push($this->stack, $tag);
