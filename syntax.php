@@ -59,7 +59,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     function getPType(){ return 'block';}
     function getSort(){  return 59; } // = Doku_Parser_Mode_table-1
     function getAllowedTypes() { 
-        return array('container', 'formatting', 'substition', 'disabled', 'protected'); 
+        return array('container', 'formatting', 'substition', 'disabled', 'protected', 'paragraphs');
     }
 
     /**
