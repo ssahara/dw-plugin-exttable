@@ -294,7 +294,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         return false;
     }
 
-    protected function render_xhtml(&$renderer, $data) {
+    protected function render_xhtml(Doku_Renderer $renderer, $data) {
         //list($tag, $state, $match) = $data;
         list($state, $tag, $attr) = $data;
 
