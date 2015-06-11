@@ -22,7 +22,7 @@ class action_plugin_exttab3 extends DokuWiki_Action_Plugin {
         $controller->register_hook('TOOLBAR_DEFINE', 'AFTER', $this, 'handle_toolbar', array ());
     }
 
-    public function handle_toolbar(&$event, $param) {
+    public function handle_toolbar(Doku_Event $event, $param) {
         $event->data[] = array (
             'type' => 'picker',
             'title' => 'extended table typical patterns',

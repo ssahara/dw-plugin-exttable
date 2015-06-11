@@ -1,0 +1,17 @@
+/********************************************************************
+ODT-Export Styles for the Exttab3 Plugin
+********************************************************************/
+
+.exttable th {
+    border: 1pt solid __border__;
+    padding: 0.5em;
+    background-color: __background_alt__;
+    color: __text__;
+    font-weight:bold;
+}
+
+.exttable td {
+    border: 1pt solid __border__;
+    padding: 0.5em;
+}
+

@@ -6,7 +6,6 @@
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Satoshi Sahara <sahara.satoshi@gmail.com>
- * @date       2014-11-20
  */
  
 // must be run within Dokuwiki
@@ -26,13 +25,18 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
         // define name, prefix and postfix of tags
         $this->tagsmap = array(
-                'table'   => array("", "\n" ),        // table start  : {|
-                '/table'  => array("", ""),           // table end    : |}
-                'caption' => array("\t", "\n" ),      // caption      : |+
-                'tr'      => array("\t", "\n" ),      // table row    : |-
-                'th'      => array("\t"."\t", "\n" ), // table header : !
-                'td'      => array("\t"."\t", "\n" ), // table data   : |
                 'div'     => array("", "\n" ),        // wrapper
+                '/div'    => array("", "\n" ),
+                'table'   => array("", "\n" ),        // table start  : {|
+                '/table'  => array("", "\n"),         // table end    : |}
+                'caption' => array("", "" ),          // caption      : |+
+                '/caption'=> array("", "\n"),
+                'tr'      => array("", "\n"),         // table row    : |-
+                '/tr'     => array("", "\n"),
+                'th'      => array("", "" ),          // table header : !
+                '/th'     => array("", "\n"),
+                'td'      => array("", "" ),          // table data   : |
+                '/td'     => array("", "\n"),
         );
 
         // define allowable attibutes for table tags
@@ -54,7 +58,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     function getPType(){ return 'block';}
     function getSort(){  return 59; } // = Doku_Parser_Mode_table-1
     function getAllowedTypes() { 
-        return array('container', 'formatting', 'substition', 'disabled', 'protected'); 
+        return array('container', 'formatting', 'substition', 'disabled', 'protected', 'paragraphs');
     }
 
     /**
@@ -135,7 +139,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         switch ($state) {
             case DOKU_LEXER_ENTER:
                 // wrapper open
-                $this->_writeCall('div', 'class="exttab"', DOKU_LEXER_ENTER, $pos,$match,$handler);
+                $this->_writeCall('div', 'class="exttable"', DOKU_LEXER_ENTER, $pos,$match,$handler);
                 // table start
                 list($tag, $attr) = $this->_resolve_markup($match);
                 array_push($this->stack, $tag);
@@ -278,14 +282,18 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         if (empty($data)) return false;
 
         switch ($format) {
-            case 'xhtml' : return $this->render_xhtml($renderer, $data);
+            case 'xhtml' :
+                return $this->render_xhtml($renderer, $data);
+            case 'odt'   :
+                $odt = $this->loadHelper('exttab3_odt');
+                return $odt->render($renderer, $data);
             default:
                 return true;
         }
         return false;
     }
 
-    protected function render_xhtml(&$renderer, $data) {
+    protected function render_xhtml(Doku_Renderer $renderer, $data) {
         //list($tag, $state, $match) = $data;
         list($state, $tag, $attr) = $data;
 
@@ -302,6 +310,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 break;
         }
     }
+
 
     /**
      * open a exttab tag, used by render_xhtml()
@@ -324,8 +333,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * @return string             html used to close the tag
      */
     protected function _close($tag) {
-        $before = $this->tagsmap[$tag][0];
-        $after  = $this->tagsmap[$tag][1];
+        $before = $this->tagsmap['/'.$tag][0];
+        $after  = $this->tagsmap['/'.$tag][1];
         return $before.'</'.$tag.'>'.$after;
     }
 
