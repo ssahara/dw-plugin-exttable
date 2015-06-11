@@ -26,13 +26,18 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
         // define name, prefix and postfix of tags
         $this->tagsmap = array(
-                'table'   => array("", "\n" ),        // table start  : {|
-                '/table'  => array("", ""),           // table end    : |}
-                'caption' => array("\t", "\n" ),      // caption      : |+
-                'tr'      => array("\t", "\n" ),      // table row    : |-
-                'th'      => array("\t"."\t", "\n" ), // table header : !
-                'td'      => array("\t"."\t", "\n" ), // table data   : |
                 'div'     => array("", "\n" ),        // wrapper
+                '/div'    => array("", "\n" ),
+                'table'   => array("", "\n" ),        // table start  : {|
+                '/table'  => array("", "\n"),         // table end    : |}
+                'caption' => array("", "" ),          // caption      : |+
+                '/caption'=> array("", "\n"),
+                'tr'      => array("", "\n"),         // table row    : |-
+                '/tr'     => array("", "\n"),
+                'th'      => array("", "" ),          // table header : !
+                '/th'     => array("", "\n"),
+                'td'      => array("", "" ),          // table data   : |
+                '/td'     => array("", "\n"),
         );
 
         // define allowable attibutes for table tags
@@ -329,8 +334,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * @return string             html used to close the tag
      */
     protected function _close($tag) {
-        $before = $this->tagsmap[$tag][0];
-        $after  = $this->tagsmap[$tag][1];
+        $before = $this->tagsmap['/'.$tag][0];
+        $after  = $this->tagsmap['/'.$tag][1];
         return $before.'</'.$tag.'>'.$after;
     }
 
