@@ -10,8 +10,6 @@
  
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
-if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
-require_once(DOKU_PLUGIN.'syntax.php');
  
 class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
@@ -95,7 +93,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * helper function to simplify writing plugin calls to the instruction list
      * first three arguments are passed to function render as $data
      */
-    protected function _writeCall($tag, $attr, $state, $pos, $match, &$handler) {
+    protected function _writeCall($tag, $attr, $state, $pos, $match, $handler) {
         $handler->addPluginCall($this->getPluginName(),
             array($state, $tag, $attr), $state, $pos, $match);
     }
