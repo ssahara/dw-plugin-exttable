@@ -14,13 +14,10 @@ if(!defined('DOKU_INC')) die();
 class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
     protected $stack = array();  // stack of current open tag - used by handle() method
-    protected $tableDepth;       // table depth counter
     protected $tagsmap  = array();
     protected $attrsmap = array();
 
     function __construct() {
-        $this->tableDepth = 0;
-
         // define name, prefix and postfix of tags
         $this->tagsmap = array(
                 'div'     => array("", "\n" ),        // wrapper
@@ -144,7 +141,6 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 list($tag, $attr) = $this->_resolve_markup($match);
                 array_push($this->stack, $tag);
                 $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
-                $this->tableDepth = $this->tableDepth +1; // increment table depth counter
                 break;
             case DOKU_LEXER_MATCHED:
                 $tag_prev = end($this->stack);
@@ -217,7 +213,6 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                                     $oldtag = array_pop($this->stack);
                                     $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
                 } while ($oldtag != 'table');
-                $this->tableDepth = $this->tableDepth -1;
                 // wrapper close
                 $this->_writeCall('div', '', DOKU_LEXER_EXIT, $pos,$match,$handler);
                 break;
