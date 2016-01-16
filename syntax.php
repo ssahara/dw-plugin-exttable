@@ -97,6 +97,14 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
             array($state, $tag, $attr), $state, $pos, $match);
     }
 
+    protected function _open($tag, $attr, $pos, $match, $handler) {
+        $this->_writeCall($tag,$attr,DOKU_LEXER_ENTER, $pos,$match,$handler);
+    }
+
+    protected function _close($tag, $pos, $match, $handler) {
+        $this->_writeCall($tag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+    }
+
     /**
      * helper function for exttab syntax translation to html
      *
@@ -136,19 +144,19 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         switch ($state) {
             case DOKU_LEXER_ENTER:
                 // wrapper open
-                $this->_writeCall('div', 'class="exttable"', DOKU_LEXER_ENTER, $pos,$match,$handler);
+                $this->_open('div', 'class="exttable"', $pos,$match,$handler);
                 // table start
                 list($tag, $attr) = $this->_interpret($match);
                 array_push($this->stack, $tag);
-                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                $this->_open($tag, $attr, $pos,$match,$handler);
                 break;
             case DOKU_LEXER_EXIT:
                 do { // rewind table
                     $oldtag = array_pop($this->stack);
-                    $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+                    $this->_close($oldtag, $pos,$match,$handler);
                 } while ($oldtag != 'table');
                 // wrapper close
-                $this->_writeCall('div', '', DOKU_LEXER_EXIT, $pos,$match,$handler);
+                $this->_close('div', $pos,$match,$handler);
                 break;
             case DOKU_LEXER_MATCHED:
                 $tag_prev = end($this->stack);
@@ -156,20 +164,20 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 switch ($tag_prev) {
                     case 'caption':
                                 $oldtag = array_pop($this->stack);
-                                $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+                                $this->_close($oldtag, $pos,$match,$handler);
                     case 'table':
                         switch ($tag) {
                             case 'caption':
                             case 'tr':
                                 array_push($this->stack, $tag);
-                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                $this->_open($tag, $attr, $pos,$match,$handler);
                                 break;
                             case 'th':
                             case 'td':
                                 array_push($this->stack, 'tr');
-                                $this->_writeCall('tr', '', DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                $this->_open('tr', '', $pos,$match,$handler);
                                 array_push($this->stack, $tag);
-                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                $this->_open($tag, $attr, $pos,$match,$handler);
                                 break;
                         }
                         break;
@@ -180,14 +188,14 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                                 break;
                             case 'tr':
                                 $oldtag = array_pop($this->stack);
-                                $this->_writeCall($oldtag, '', DOKU_LEXER_EXIT, $pos,$match,$handler); 
+                                $this->_close($oldtag, $pos,$match,$handler);
                                 array_push($this->stack, $tag);
-                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                $this->_open($tag, $attr, $pos,$match,$handler);
                                 break;
                             case 'th':
                             case 'td':
                                 array_push($this->stack, $tag);
-                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                $this->_open($tag, $attr, $pos,$match,$handler);
                                 break;
                         }
                         break;
@@ -200,17 +208,17 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                             case 'tr':
                                 do { // rewind old row prior to start new row
                                     $oldtag = array_pop($this->stack);
-                                    $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+                                    $this->_close($oldtag, $pos,$match,$handler);
                                 } while ($oldtag != 'tr');
                                 array_push($this->stack, $tag);
-                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                $this->_open($tag, $attr, $pos,$match,$handler);
                                 break;
                             case 'th':
                             case 'td':
                                 $oldtag = array_pop($this->stack);
-                                $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler); 
+                                $this->_close($oldtag, $pos,$match,$handler);
                                 array_push($this->stack, $tag);
-                                $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                $this->_open($tag, $attr, $pos,$match,$handler);
                                 break;
                         }
                         break;
@@ -225,10 +233,10 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                                 break;
                     case 'table':
                                 array_push($this->stack, 'tr');
-                                $this->_writeCall('tr','',DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                $this->_open('tr','', $pos,$match,$handler);
                     case 'tr':
                                 array_push($this->stack, 'td');
-                                $this->_writeCall('td','',DOKU_LEXER_ENTER, $pos,$match,$handler);
+                                $this->_open('td','', $pos,$match,$handler);
                     case 'th':
                     case 'td':
                                 // cdata --- use base() instead of $this->_writeCall()
