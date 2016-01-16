@@ -101,9 +101,9 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * helper function for exttab syntax translation to html
      *
      * @param string $match       matched string
-     * @return array              tag name, and attributes
+     * @return array              tag name and attributes
      */
-    protected function _resolve_markup($match='') {
+    protected function _interpret($match='') {
         $markup = substr(trim($match), 0, 2);
         if ($markup       == '{|') { // table_start
             return array('table', substr($match, 2));
@@ -138,13 +138,21 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 // wrapper open
                 $this->_writeCall('div', 'class="exttable"', DOKU_LEXER_ENTER, $pos,$match,$handler);
                 // table start
-                list($tag, $attr) = $this->_resolve_markup($match);
+                list($tag, $attr) = $this->_interpret($match);
                 array_push($this->stack, $tag);
                 $this->_writeCall($tag, $attr, DOKU_LEXER_ENTER, $pos,$match,$handler);
                 break;
+            case DOKU_LEXER_EXIT:
+                do { // rewind table
+                    $oldtag = array_pop($this->stack);
+                    $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+                } while ($oldtag != 'table');
+                // wrapper close
+                $this->_writeCall('div', '', DOKU_LEXER_EXIT, $pos,$match,$handler);
+                break;
             case DOKU_LEXER_MATCHED:
                 $tag_prev = end($this->stack);
-                list($tag, $attr) = $this->_resolve_markup($match);
+                list($tag, $attr) = $this->_interpret($match);
                 switch ($tag_prev) {
                     case 'caption':
                                 $oldtag = array_pop($this->stack);
@@ -207,14 +215,6 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                         }
                         break;
                 }
-                break;
-            case DOKU_LEXER_EXIT:
-                do { // rewind table
-                                    $oldtag = array_pop($this->stack);
-                                    $this->_writeCall($oldtag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
-                } while ($oldtag != 'table');
-                // wrapper close
-                $this->_writeCall('div', '', DOKU_LEXER_EXIT, $pos,$match,$handler);
                 break;
             case DOKU_LEXER_UNMATCHED:
                 $tag_prev = end($this->stack);
