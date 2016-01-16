@@ -264,14 +264,14 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
         switch ( $state ) {
             case DOKU_LEXER_ENTER:    // open tag
-                $renderer->doc.= $this->_open($tag, $attr);
+                $renderer->doc.= $this->_tag_open($tag, $attr);
                 break;
             case DOKU_LEXER_MATCHED:  // defensive, shouldn't occur
             case DOKU_LEXER_UNMATCHED:
                 $renderer->cdata($tag);
                 break;
             case DOKU_LEXER_EXIT:     // close tag
-                $renderer->doc.= $this->_close($tag);
+                $renderer->doc.= $this->_tag_close($tag);
                 break;
         }
     }
@@ -284,7 +284,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * @param  string $attr       attibutes of tag element
      * @return string             html used to open the tag
      */
-    protected function _open($tag, $attr=NULL) {
+    protected function _tag_open($tag, $attr=NULL) {
         $before = $this->tagsmap[$tag][0];
         $after  = $this->tagsmap[$tag][1];
         $attr = $this->_cleanAttrString($attr, $this->attrsmap);
@@ -297,7 +297,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * @param  string $tag        'table','caption','tr','th' or 'td'
      * @return string             html used to close the tag
      */
-    protected function _close($tag) {
+    protected function _tag_close($tag) {
         $before = $this->tagsmap['/'.$tag][0];
         $after  = $this->tagsmap['/'.$tag][1];
         return $before.'</'.$tag.'>'.$after;
@@ -328,7 +328,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * some safe stuff, but better safe than sorry.)
      * NOTE: Attribute values MUST be in quotes now.
      */
-    function _cleanAttrString($attr='', $allowed_keys) {
+    protected function _cleanAttrString($attr='', $allowed_keys) {
         if (is_null($attr)) return NULL;
         # Keep spaces simple
         $attr = trim(preg_replace('/\s+/', ' ', $attr));
