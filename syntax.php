@@ -20,8 +20,6 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     function __construct() {
         // define name, prefix and postfix of tags
         $this->tagsmap = array(
-                'div'     => array("", "\n" ),        // wrapper
-                '/div'    => array("", "\n" ),
                 'table'   => array("", "\n" ),        // table start  : {|
                 '/table'  => array("", "\n"),         // table end    : |}
                 'caption' => array("", "" ),          // caption      : |+
@@ -133,6 +131,29 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         }
     }
 
+    /**
+     * append specified class name to attributes
+     *
+     * @param string $class       class name
+     * @param string $attr        attributes of html tag
+     * @return string             modified $attr
+     */
+    private function _appendClass($class, $attr) {
+        $regex = "/\b(?:class=\")(.*?\b($class)?\b.*?)\"/";
+        preg_match($regex, $attr, $matches);
+        if ($matches[2]) {
+            return $attr;
+        } elseif (empty($matches[0])) {
+            return $attr.' class="'.$class.'"';
+        } else {
+            $items = explode(' ',$matches[1]);
+            $items[] = $class;
+            $replace = '$class="'.implode(' ',$items).'"';
+            error_log('ExtTable _appendClass: replaced '.$replace);
+            return str_replace($matches[0], $replace, $attr);
+        }
+    }
+
 
     /**
      * Handle the match
@@ -143,10 +164,10 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
         switch ($state) {
             case DOKU_LEXER_ENTER:
-                // wrapper open
-                $this->_open('div', 'class="exttable"', $pos,$match,$handler);
                 // table start
                 list($tag, $attr) = $this->_interpret($match);
+                // ensure that class attribute cotains "exttable"
+                $attr = $this->_appendClass('exttable', $attr);
                 array_push($this->stack, $tag);
                 $this->_open($tag, $attr, $pos,$match,$handler);
                 break;
@@ -155,8 +176,6 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                     $oldtag = array_pop($this->stack);
                     $this->_close($oldtag, $pos,$match,$handler);
                 } while ($oldtag != 'table');
-                // wrapper close
-                $this->_close('div', $pos,$match,$handler);
                 break;
             case DOKU_LEXER_MATCHED:
                 $tag_prev = end($this->stack);
