@@ -149,7 +149,6 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
             $items = explode(' ',$matches[1]);
             $items[] = $class;
             $replace = '$class="'.implode(' ',$items).'"';
-            error_log('ExtTable _appendClass: replaced '.$replace);
             return str_replace($matches[0], $replace, $attr);
         }
     }
