@@ -110,23 +110,25 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * @return array              tag name and attributes
      */
     protected function _interpret($match='') {
-        $markup = substr(trim($match), 0, 2);
-        if ($markup       == '{|') { // table_start
-            return array('table', substr($match, 2));
-        } elseif ($markup == '|}') { // table_end
-            return array('/table', '');
-        } elseif ($markup == '|+') { // table_caption
-            return array('caption', trim(substr($match, 2), '|'));
-        } elseif ($markup == '|-') { // table_row
-            return array('tr', trim(substr($match, 2), '-'));
+        $markup = ltrim($match);
+        $len = 2;
+        $m2 = substr($markup, 0, $len);
+        switch ($m2) {
+            case '{|': $tag = 'table';   break;
+            case '|}': $tag = '/table';  break;
+            case '|+': $tag = 'caption'; break;
+            case '|-': $tag = 'tr';      break;
+            default:
+                $len = 1;
+                $m1 = substr($markup, 0, $len);
+                if ($m1 == '!') $tag = 'th';
+                if ($m1 == '|') $tag = 'td';
         }
-        $markup = substr(trim($match), 0, 1);
-        if ($markup       == '!') {  // table_header
-            return array('th', trim($match, '!|'));
-        } elseif ($markup == '|') {  // table_data
-            return array('td', trim($match, '|'));
+        if (isset($tag)) {
+            $attrs = substr($markup, $len);
+            return array($tag, $attrs);
         } else {
-            msg($this->getPluginName().' ERROR: unknown syntax: '.hsc($match) ,-1);
+            msg($this->getPluginName().' ERROR: unknown syntax: '.hsc($markup) ,-1);
             return false;
         }
     }
@@ -202,7 +204,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                     case 'tr':
                         switch ($tag) {
                             case 'caption':
-                                msg($this->getPluginName().' Syntax ERROR: match='.hsc($match) ,-1);
+                                msg($this->getPluginName().' Syntax ERROR: match='.hsc(trim($match)) ,-1);
                                 break;
                             case 'tr':
                                 $oldtag = array_pop($this->stack);
@@ -221,7 +223,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                     case 'td':
                         switch ($tag) {
                             case 'caption':
-                                msg($this->getPluginName().' Syntax ERROR: match='.hsc($match) ,-1);
+                                msg($this->getPluginName().' Syntax ERROR: match='.hsc(trim($match)) ,-1);
                                 break;
                             case 'tr':
                                 do { // rewind old row prior to start new row
