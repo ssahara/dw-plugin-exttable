@@ -22,13 +22,13 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         $this->tagsmap = array(
                 'table'   => array("", "\n" ),        // table start  : {|
                 '/table'  => array("", "\n"),         // table end    : |}
-                'caption' => array("", "" ),          // caption      : |+
+                'caption' => array("", ""),           // caption      : |+
                 '/caption'=> array("", "\n"),
                 'tr'      => array("", "\n"),         // table row    : |-
                 '/tr'     => array("", "\n"),
-                'th'      => array("", "" ),          // table header : !
+                'th'      => array("", ""),           // table header : !
                 '/th'     => array("", "\n"),
-                'td'      => array("", "" ),          // table data   : |
+                'td'      => array("", ""),           // table data   : |
                 '/td'     => array("", "\n"),
         );
 
@@ -112,17 +112,19 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     protected function _interpret($match='') {
         $markup = ltrim($match);
         $len = 2;
-        $m2 = substr($markup, 0, $len);
-        switch ($m2) {
+        switch (substr($markup, 0, $len)) {
             case '{|': $tag = 'table';   break;
             case '|}': $tag = '/table';  break;
             case '|+': $tag = 'caption'; break;
             case '|-': $tag = 'tr';      break;
+            case '||': $tag = 'td';      break;
+            case '!!': $tag = 'th';      break;
             default:
                 $len = 1;
-                $m1 = substr($markup, 0, $len);
-                if ($m1 == '!') $tag = 'th';
-                if ($m1 == '|') $tag = 'td';
+                switch (substr($markup, 0, $len)) {
+                    case '!': $tag = 'th'; break;
+                    case '|': $tag = 'td'; break;
+                }
         }
         if (isset($tag)) {
             $attrs = substr($markup, $len);
@@ -144,10 +146,13 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         $regex = "/\b(?:class=\")(.*?\b($class)?\b.*?)\"/";
         preg_match($regex, $attr, $matches);
         if ($matches[2]) {
+            // $class found in the class attribute
             return $attr;
         } elseif (empty($matches[0])) {
+            // class attribute is not specified
             return $attr.' class="'.$class.'"';
         } else {
+            // class attribute is specified, but include $class
             $items = explode(' ',$matches[1]);
             $items[] = $class;
             $replace = '$class="'.implode(' ',$items).'"';
@@ -281,9 +286,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 $odt = $this->loadHelper('exttab3_odt');
                 return $odt->render($renderer, $data);
             default:
-                return true;
+                return false;
         }
-        return false;
     }
 
     protected function render_xhtml(Doku_Renderer $renderer, $data) {
