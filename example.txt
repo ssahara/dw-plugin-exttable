@@ -1,0 +1,100 @@
+====== Examples for the Extended Table ======
+[[doku>plugin:exttab3]]
+  * http://www.mediawiki.org/wiki/Help:Tables
+  * http://meta.wikimedia.org/wiki/Help:Table
+
+===== Quick example =====
+<WRAP col2>
+=== Source Text===
+<file>
+{| title="Extended Table Example"
+|+//Extended Table Example//
+! style="width: 12em;"| A1 Header
+! style="width: 10em;"| B1 Header
+|- style="background-color: MistyRose;"
+|
+{| title="nested table"
+|+ //nested table//
+|
+{{ wiki:dokuwiki-128.png?50&nolink}}
+**Lorem** ipsum dolor sit amet, 
+//consetetur// sadipscing elitr, 
+sed diam nonumy eirmod tempor invidunt
+ut labore et dolore magna aliquyam erat, 
+sed diam voluptua.
+|}
+|
+List in Cell
+  * //italic// and **bold**
+  * ''monospace''
+  * [[:start|page link]]
+
+> quoting
+
+**ATTENSION:**\\
+Needs an extra empty line 
+after lists and quoting syntax!
+|}
+</file>
+
+=== Visual Output ===
+{| title="Extended Table Example"
+|+//Extended Table Example//
+! style="width: 12em;"| A1 Header
+! style="width: 10em;"| B1 Header
+|- style="background-color: MistyRose;"
+|
+{| title="nested table"
+|+ //nested table//
+|
+{{ wiki:dokuwiki-128.png?50&nolink}}
+**Lorem** ipsum dolor sit amet, 
+//consetetur// sadipscing elitr, 
+sed diam nonumy eirmod tempor invidunt
+ut labore et dolore magna aliquyam erat, 
+sed diam voluptua.
+|}
+|
+List in Cell
+  * //italic// and **bold**
+  * ''monospace''
+  * [[:start|page link]]
+
+> quoting
+
+**ATTENSION:**\\
+Needs an extra empty line 
+after lists and quoting syntax!
+|}
+</WRAP> /* col2 */
+
+
+\\
+===== Sections in Table =====
+<WRAP col2>
+=== Source Text===
+<file>
+{| title="Example : Using Section markup in Table" 
+|
+<WRAP info>[[doku>plugin:wrap]] box
+====Sections in Wrap block====
+The headline will be shown in TOC.
+</WRAP>
+===== Sections in a Cell =====
+
+Section markup does not work.
+|}
+</file>
+
+=== Visual Output ===
+{| title="Example : Using Section markup in Table" 
+|
+<WRAP info>[[doku>plugin:wrap]] box
+====Sections in Wrap block====
+The headline will be shown in TOC.
+</WRAP>
+===== Sections in a Cell =====
+
+Section markup does not work.
+|}
+</WRAP>
