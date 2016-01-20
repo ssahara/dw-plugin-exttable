@@ -20,30 +20,31 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     function __construct() {
         // define name, prefix and postfix of tags
         $this->tagsmap = array(
-                'table'   => array("", "\n" ),        // table start  : {|
-                '/table'  => array("", "\n"),         // table end    : |}
-                'caption' => array("", ""),           // caption      : |+
-                '/caption'=> array("", "\n"),
-                'tr'      => array("", "\n"),         // table row    : |-
-                '/tr'     => array("", "\n"),
-                'th'      => array("", ""),           // table header : !
-                '/th'     => array("", "\n"),
-                'td'      => array("", ""),           // table data   : |
-                '/td'     => array("", "\n"),
+                'table'    => array("", "\n" ),     // table start  : {|
+                '/table'   => array("", "\n"),      // table end    : |}
+                'caption'  => array("", ""),        // caption      : |+
+                '/caption' => array("", "\n"),
+                'tr'       => array("", "\n"),      // table row    : |-
+                '/tr'      => array("", "\n"),
+                'th'       => array("", ""),        // table header : !
+                '/th'      => array("", "\n"),
+                'td'       => array("", ""),        // table data   : |
+                '/td'      => array("", "\n"),
         );
 
         // define allowable attibutes for table tags
         $this->attrsmap = array(
-            # simple ones (value is a single word)
-            'align', 'border', 'cellpadding', 'cellspacing', 'frame', 
-            'rules', 'width', 'class', 'dir', 'id', 'lang', 'xml:lang',
-            # more complex ones (value is a string or style)
-            'bgcolor', 'summary', 'title', 'style',
-            # additional tr, thead, tbody, tfoot attributes
-            'char', 'charoff', 'valign',
-            # additional td attributes
-            'abbr', 'colspan', 'axis', 'headers', 'rowspan', 'scope',
-            'height', 'width', 'nowrap',
+            # html5 HTML Global Attributes
+            'accesskey', 'class', 'contenteditable', 'contextmenu',
+            'dir', 'draggable', 'dropzone', 'hidden', 'id', 'lang',
+            'spellcheck', 'style', 'tabindex', 'title', 'translate',
+            'xml:lang',
+            # html5 table tag
+            'border', 'sortable',
+            # html5 th and td tag
+            'abbr', 'colspan', 'headers', 'rowspan', 'scope', 'sorted',
+            # deprecated in html5
+            'align', 'valign', 'width', 'height', 'bgcolor', 'nowrap',
         );
     }
 
@@ -73,7 +74,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         // table end:    |}
         $this->Lexer->addExitPattern('[ \t]*\n\|\}', $pluginMode);
 
-        $attrs = '[^\n\{\|\!\[]+'; // match pattern for attributes
+        // match pattern for attributes
+        $attrs = '[^\n\{\|\!\[]+';
 
         // caption:      |+ attrs | caption
         $this->Lexer->addPattern("\n\|\+ *(?:$attrs\|(?!\|))?", $pluginMode);
