@@ -13,11 +13,14 @@ if(!defined('DOKU_INC')) die();
  
 class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
+    protected $pluginMode;
     protected $stack = array();  // stack of current open tag - used by handle() method
     protected $tagsmap  = array();
     protected $attrsmap = array();
 
     function __construct() {
+        $this->pluginMode = substr(get_class($this), 7);
+
         // define name, prefix and postfix of tags
         $this->tagsmap = array(
                 'table'    => array("", "\n" ),     // table start  : {|
@@ -56,7 +59,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     }
     // override default accepts() method to allow nesting
     public function accepts($mode) {
-        if ($mode == substr(get_class($this), 7)) return true;
+        if ($mode == $this->pluginMode) return true;
         return parent::accepts($mode);
     }
 
@@ -65,26 +68,24 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * modified from original exttab2 code
      */
     function connectTo($mode) {
-        $pluginMode = 'plugin_'.$this->getPluginName();
         // table start:  {| attrs
-        $this->Lexer->addEntryPattern('\n\{\|[^\n]*',$mode, $pluginMode);
+        $this->Lexer->addEntryPattern('\n\{\|[^\n]*',$mode, $this->pluginMode);
     }
     function postConnect() {
-        $pluginMode = 'plugin_'.$this->getPluginName();
         // table end:    |}
-        $this->Lexer->addExitPattern('[ \t]*\n\|\}', $pluginMode);
+        $this->Lexer->addExitPattern('[ \t]*\n\|\}', $this->pluginMode);
 
         // match pattern for attributes
         $attrs = '[^\n\{\|\!\[]+';
 
         // caption:      |+ attrs | caption
-        $this->Lexer->addPattern("\n\|\+ *(?:$attrs\|(?!\|))?", $pluginMode);
+        $this->Lexer->addPattern("\n\|\+ *(?:$attrs\|(?!\|))?", $this->pluginMode);
         // table row:    |- attrs
-        $this->Lexer->addPattern(' *?\n\|\-+[^\n]*', $pluginMode);
+        $this->Lexer->addPattern(' *?\n\|\-+[^\n]*', $this->pluginMode);
         // table header: ! attrs |
-        $this->Lexer->addPattern("(?: *?\n|\!)\!(?:$attrs\|(?!\|))?", $pluginMode);
+        $this->Lexer->addPattern("(?: *?\n|\!)\!(?:$attrs\|(?!\|))?", $this->pluginMode);
         // table data:   | attrs |
-        $this->Lexer->addPattern("(?: *?\n|\|)\|(?:$attrs\|(?!\|))?", $pluginMode);
+        $this->Lexer->addPattern("(?: *?\n|\|)\|(?:$attrs\|(?!\|))?", $this->pluginMode);
     }
 
 
