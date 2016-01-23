@@ -31,7 +31,7 @@ List in Cell
 
 > quoting
 
-**ATTENSION:**\\
+**ATTENTION:**\\
 Needs an extra empty line 
 after lists and quoting syntax!
 |}
@@ -62,7 +62,7 @@ List in Cell
 
 > quoting
 
-**ATTENSION:**\\
+**ATTENTION:**\\
 Needs an extra empty line 
 after lists and quoting syntax!
 |}
