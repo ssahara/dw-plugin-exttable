@@ -34,29 +34,57 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin {
 
         switch ( $state ) {
             case DOKU_LEXER_ENTER:    // open tag
-                // Get CSS properties for ODT export.
-                $renderer->getODTProperties($properties, $tag, $class, $style);
+                if (!class_exists('ODTDocument')) {
+                    // Code for backwards compatibility to older ODT versions
+                    // Get CSS properties for ODT export.
+                    $renderer->getODTProperties($properties, $tag, $class, $style);
 
-                switch ($tag) {
-                    case 'table':
-                        $renderer->_odtTableOpenUseProperties($properties);
-                        break;
-                    case 'caption':
-                        $renderer->_odtTableRowOpenUseProperties($properties);
+                    switch ($tag) {
+                        case 'table':
+                            $renderer->_odtTableOpenUseProperties($properties);
+                            break;
+                        case 'caption':
+                            // There is no caption in ODT table format.
+                            // So we emulate it by creating a header row spaning over all columns.
+                            $renderer->_odtTableRowOpenUseProperties($properties);
 
-                        // Parameter 'colspan=0' indicates spann across all columns!
-                        $renderer->_odtTableHeaderOpenUseProperties($properties, 0, 1);
-                        break;
-                    case 'th':
-                        $renderer->_odtTableHeaderOpenUseProperties($properties);
-                        $renderer->_odtTableAddColumnUseProperties($properties);
-                        break;
-                    case 'tr':
-                        $renderer->_odtTableRowOpenUseProperties($properties);
-                        break;
-                    case 'td':
-                        $renderer->_odtTableCellOpenUseProperties($properties);
-                        break;
+                            // Parameter 'colspan=0' indicates span across all columns!
+                            $renderer->_odtTableHeaderOpenUseProperties($properties, 0, 1);
+                            break;
+                        case 'th':
+                            $renderer->_odtTableHeaderOpenUseProperties($properties);
+                            $renderer->_odtTableAddColumnUseProperties($properties);
+                            break;
+                        case 'tr':
+                            $renderer->_odtTableRowOpenUseProperties($properties);
+                            break;
+                        case 'td':
+                            $renderer->_odtTableCellOpenUseProperties($properties);
+                            break;
+                    }
+                } else {
+                    switch ($tag) {
+                        case 'table':
+                            $renderer->_odtTableOpenUseCSS(NULL, NULL, $tag, $attr);
+                            break;
+                        case 'caption':
+                            // There is no caption in ODT table format.
+                            // So we emulate it by creating a header row spaning over all columns.
+                            $renderer->_odtTableRowOpenUseCSS($tag, $attr);
+
+                            // Parameter 'colspan=0' indicates span across all columns!
+                            $renderer->_odtTableHeaderOpenUseCSS(0, 1, $tag, $attr);
+                            break;
+                        case 'th':
+                            $renderer->_odtTableHeaderOpenUseCSS(1, 1, $tag, $attr);
+                            break;
+                        case 'tr':
+                            $renderer->_odtTableRowOpenUseCSS($tag, $attr);
+                            break;
+                        case 'td':
+                            $renderer->_odtTableCellOpenUseCSS(1, 1, $tag, $attr);
+                            break;
+                    }
                 }
                 break;
             case DOKU_LEXER_MATCHED:  // defensive, shouldn't occur
