@@ -1,5 +1,5 @@
-DokuWiki plugin ExtTab3
-=======================
+Extended Table Syntax for DokuWiki
+==================================
 
 The third trial to implement extended (MediaWiki-style) table syntax in DokuWiki
 
@@ -23,4 +23,4 @@ Licensed under the GNU Public License (GPL) version 2
 More infomation is available:
   * https://www.dokuwiki.org/plugin:exttab3
 
-(c) 2014-2016 Satoshi Sahara \<sahara.satoshi@gmail.com>
+(c) 2014-2017 Satoshi Sahara \<sahara.satoshi@gmail.com>
