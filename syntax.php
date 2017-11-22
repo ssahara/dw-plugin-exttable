@@ -286,6 +286,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
             case 'xhtml' :
                 return $this->render_xhtml($renderer, $data);
             case 'odt'   :
+            case 'odt_pdf':
                 $odt = $this->loadHelper('exttab3_odt');
                 return $odt->render($renderer, $data);
             default:
