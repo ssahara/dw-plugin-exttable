@@ -306,6 +306,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
                 }
                 break;
         }
+        return false;
     }
 
 
@@ -345,6 +346,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
                 $renderer->doc.= $this->tag_close($tag);
                 break;
         }
+        return true;
     }
 
 
