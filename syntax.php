@@ -126,17 +126,22 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
     protected function _writeCall($tag, $attr, $state, $pos, $match, $handler)
     {
         $handler->addPluginCall($this->getPluginName(),
-            array($state, $tag, $attr), $state, $pos, $match);
+            array($state, $tag, $attr), $state, $pos, $match
+        );
     }
 
     protected function _open($tag, $attr, $pos, $match, $handler)
     {
-        $this->_writeCall($tag,$attr,DOKU_LEXER_ENTER, $pos,$match,$handler);
+      //$this->_writeCall($tag,$attr,DOKU_LEXER_ENTER, $pos,$match,$handler);
+        $match = array(DOKU_LEXER_ENTER, $tag, $attr);
+        $handler->plugin($match, 'addPluginCall', $pos, $this->getPluginName());
     }
 
     protected function _close($tag, $pos, $match, $handler)
     {
-        $this->_writeCall($tag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+      //$this->_writeCall($tag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+        $match = array(DOKU_LEXER_EXIT, $tag, $attr);
+        $handler->plugin($match, 'addPluginCall', $pos, $this->getPluginName());
     }
 
     /**
@@ -205,6 +210,9 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
     public function handle($match, $state, $pos, Doku_Handler $handler)
     {
         switch ($state) {
+            case 'addPluginCall':
+                return $data = $match;
+
             case DOKU_LEXER_ENTER:
                 // table start
                 list($tag, $attr) = $this->interpret($match);
