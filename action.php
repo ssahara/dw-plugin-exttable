@@ -9,18 +9,22 @@
  */
 
 // must be run within Dokuwiki
-if(!defined('DOKU_INC')) die();
+if (!defined('DOKU_INC')) die();
 
-class action_plugin_exttab3 extends DokuWiki_Action_Plugin {
-
+class action_plugin_exttab3 extends DokuWiki_Action_Plugin
+{
     /**
      * register the eventhandlers
      */
-    public function register(Doku_Event_Handler $controller){
-        $controller->register_hook('TOOLBAR_DEFINE', 'AFTER', $this, 'handle_toolbar', array ());
+    public function register(Doku_Event_Handler $controller)
+    {
+        $controller->register_hook(
+            'TOOLBAR_DEFINE', 'AFTER', $this, 'handle_toolbar', array ()
+        );
     }
 
-    public function handle_toolbar(Doku_Event $event, $param) {
+    public function handle_toolbar(Doku_Event $event, $param)
+    {
         $event->data[] = array (
             'type' => 'picker',
             'title' => 'extended table typical patterns',

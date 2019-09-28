@@ -9,18 +9,39 @@
  */
  
 // must be run within Dokuwiki
-if(!defined('DOKU_INC')) die();
+if (!defined('DOKU_INC')) die();
  
-class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
+class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
+{
+    public function getType()
+    {   // Syntax Type
+        return 'container';
+    }
 
-    protected $mode;
+    public function getAllowedTypes()
+    {   // Allowed Mode Types
+        return array(
+            'container',
+            'formatting',
+            'substition',
+            'disabled',
+            'protected',
+            'paragraphs',
+        );
+    }
+
+    public function getPType()
+    {   // Paragraph Type
+        return 'block';
+    }
+
+
     protected $stack = array();  // stack of current open tag - used by handle() method
     protected $tagsmap  = array();
     protected $attrsmap = array();
 
-    function __construct() {
-        $this->mode = substr(get_class($this), 7);
-
+    public function __construct()
+    {
         // define name, prefix and postfix of tags
         $this->tagsmap = array(
                 'table'    => array("", "\n" ),     // table start  : {|
@@ -37,41 +58,39 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
 
         // define allowable attibutes for table tags
         $this->attrsmap = array(
-            # html5 HTML Global Attributes
+            // html5 HTML Global Attributes
             'accesskey', 'class', 'contenteditable', 'contextmenu',
             'dir', 'draggable', 'dropzone', 'hidden', 'id', 'lang',
             'spellcheck', 'style', 'tabindex', 'title', 'translate',
             'xml:lang',
-            # html5 table tag
+            // html5 table tag
             'border', 'sortable',
-            # html5 th and td tag
+            // html5 th and td tag
             'abbr', 'colspan', 'headers', 'rowspan', 'scope', 'sorted',
-            # deprecated in html5
+            // deprecated in html5
             'align', 'valign', 'width', 'height', 'bgcolor', 'nowrap',
         );
     }
 
-    function getType(){  return 'container';}
-    function getPType(){ return 'block';}
-    function getSort(){  return 59; } // = Doku_Parser_Mode_table-1
-    function getAllowedTypes() { 
-        return array('container', 'formatting', 'substition', 'disabled', 'protected', 'paragraphs');
-    }
-    // override default accepts() method to allow nesting
-    public function accepts($mode) {
-        if ($mode == $this->mode) return true;
-        return parent::accepts($mode);
+    /**
+     * Connect pattern to lexer
+     */
+    protected $mode;
+
+    public function preConnect()
+    {
+        // drop 'syntax_' from class name
+        $this->mode = substr(get_class($this), 7);
     }
 
-    /**
-     * Exttab3 syntax match patterns for parser
-     * modified from original exttab2 code
-     */
-    function connectTo($mode) {
+    public function connectTo($mode)
+    {
         // table start:  {| attrs
         $this->Lexer->addEntryPattern('\n\{\|[^\n]*',$mode, $this->mode);
     }
-    function postConnect() {
+
+    public function postConnect()
+    {
         // table end:    |}
         $this->Lexer->addExitPattern('[ \t]*\n\|\}', $this->mode);
 
@@ -88,21 +107,35 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         $this->Lexer->addPattern("(?: *?\n|\|)\|(?:$attrs\|(?!\|))?", $this->mode);
     }
 
+    public function accepts($mode)
+    {   // plugin accepts its own entry syntax
+        if ($mode == $this->mode) return true;
+        return parent::accepts($mode);
+    }
+
+    public function getSort()
+    {   // sort number used to determine priority of this mode
+        return 59; // = Doku_Parser_Mode_table-1
+    }
+
 
     /**
      * helper function to simplify writing plugin calls to the instruction list
      * first three arguments are passed to function render as $data
      */
-    protected function _writeCall($tag, $attr, $state, $pos, $match, $handler) {
+    protected function _writeCall($tag, $attr, $state, $pos, $match, $handler)
+    {
         $handler->addPluginCall($this->getPluginName(),
             array($state, $tag, $attr), $state, $pos, $match);
     }
 
-    protected function _open($tag, $attr, $pos, $match, $handler) {
+    protected function _open($tag, $attr, $pos, $match, $handler)
+    {
         $this->_writeCall($tag,$attr,DOKU_LEXER_ENTER, $pos,$match,$handler);
     }
 
-    protected function _close($tag, $pos, $match, $handler) {
+    protected function _close($tag, $pos, $match, $handler)
+    {
         $this->_writeCall($tag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
     }
 
@@ -112,7 +145,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * @param string $match       matched string
      * @return array              tag name and attributes
      */
-    protected function _interpret($match='') {
+    protected function interpret($match = '')
+    {
         $markup = ltrim($match);
         $len = 2;
         switch (substr($markup, 0, $len)) {
@@ -145,7 +179,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * @param string $attr        attributes of html tag
      * @return string             modified $attr
      */
-    private function _appendClass($class, $attr) {
+    private function appendClass($class, $attr)
+    {
         $regex = "/\b(?:class=\")(.*?\b($class)?\b.*?)\"/";
         preg_match($regex, $attr, $matches);
         if ($matches[2]) {
@@ -167,16 +202,14 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
     /**
      * Handle the match
      */
-    function handle($match, $state, $pos, Doku_Handler $handler) {
-
-        //error_log('ExtTable handle: state='.$state.' match="'.str_replace("\n","_",$match).'"');
-
+    public function handle($match, $state, $pos, Doku_Handler $handler)
+    {
         switch ($state) {
             case DOKU_LEXER_ENTER:
                 // table start
-                list($tag, $attr) = $this->_interpret($match);
+                list($tag, $attr) = $this->interpret($match);
                 // ensure that class attribute cotains "exttable"
-                $attr = $this->_appendClass('exttable', $attr);
+                $attr = $this->appendClass('exttable', $attr);
                 array_push($this->stack, $tag);
                 $this->_open($tag, $attr, $pos,$match,$handler);
                 break;
@@ -188,7 +221,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
                 break;
             case DOKU_LEXER_MATCHED:
                 $tag_prev = end($this->stack);
-                list($tag, $attr) = $this->_interpret($match);
+                list($tag, $attr) = $this->interpret($match);
                 switch ($tag_prev) {
                     case 'caption':
                                 $oldtag = array_pop($this->stack);
@@ -279,7 +312,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
    /**
     * Create output
     */
-    function render($format, Doku_Renderer $renderer, $data) {
+    public function render($format, Doku_Renderer $renderer, $data)
+    {
         if (empty($data)) return false;
 
         switch ($format) {
@@ -294,20 +328,21 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
         }
     }
 
-    protected function render_xhtml(Doku_Renderer $renderer, $data) {
+    protected function render_xhtml(Doku_Renderer $renderer, $data)
+    {
         //list($tag, $state, $match) = $data;
         list($state, $tag, $attr) = $data;
 
-        switch ( $state ) {
+        switch ($state) {
             case DOKU_LEXER_ENTER:    // open tag
-                $renderer->doc.= $this->_tag_open($tag, $attr);
+                $renderer->doc.= $this->tag_open($tag, $attr);
                 break;
             case DOKU_LEXER_MATCHED:  // defensive, shouldn't occur
             case DOKU_LEXER_UNMATCHED:
                 $renderer->cdata($tag);
                 break;
             case DOKU_LEXER_EXIT:     // close tag
-                $renderer->doc.= $this->_tag_close($tag);
+                $renderer->doc.= $this->tag_close($tag);
                 break;
         }
     }
@@ -320,10 +355,11 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * @param  string $attr       attibutes of tag element
      * @return string             html used to open the tag
      */
-    protected function _tag_open($tag, $attr=NULL) {
+    protected function tag_open($tag, $attr = null)
+    {
         $before = $this->tagsmap[$tag][0];
         $after  = $this->tagsmap[$tag][1];
-        $attr = $this->_cleanAttrString($attr, $this->attrsmap);
+        $attr = $this->cleanAttrString($attr, $this->attrsmap);
         return $before.'<'.$tag.$attr.'>'.$after;
     }
 
@@ -333,7 +369,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * @param  string $tag        'table','caption','tr','th' or 'td'
      * @return string             html used to close the tag
      */
-    protected function _tag_close($tag) {
+    protected function tag_close($tag)
+    {
         $before = $this->tagsmap['/'.$tag][0];
         $after  = $this->tagsmap['/'.$tag][1];
         return $before.'</'.$tag.'>'.$after;
@@ -364,34 +401,36 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin {
      * some safe stuff, but better safe than sorry.)
      * NOTE: Attribute values MUST be in quotes now.
      */
-    protected function _cleanAttrString($attr='', $allowed_keys) {
-        if (is_null($attr)) return NULL;
-        # Keep spaces simple
+    protected function cleanAttrString($attr = '', $allowed_keys)
+    {
+        if (is_null($attr)) return null;
+
+        // Keep spaces simple
         $attr = trim(preg_replace('/\s+/', ' ', $attr));
-        # Remove non-printable characters and angle brackets
+        // Remove non-printable characters and angle brackets
         $attr = preg_replace('/[<>[:^print:]]+/', '', $attr);
-        # This regular expression parses the value of an attribute and
-        # the quotation marks surrounding it.
-        # It assumes that all quotes within the value itself must be escaped, 
-        # which is not technically true.
-        # To keep the parsing simple (no look-ahead), the value must be in 
-        # quotes.
+        // This regular expression parses the value of an attribute and
+        // the quotation marks surrounding it.
+        // It assumes that all quotes within the value itself must be escaped, 
+        // which is not technically true.
+        // To keep the parsing simple (no look-ahead), the value must be in 
+        // quotes.
         $val = "([\"'`])(?:[^\\\\\"'`]|\\\\.)*\g{-1}";
 
         $nattr = preg_match_all("/(\w+)\s*=\s*($val)/", $attr, $matches, PREG_SET_ORDER);
-        if (!$nattr) return NULL;
+        if (!$nattr) return null;
 
         $clean_attr = '';
         for ($i = 0; $i < $nattr; ++$i) {
             $m = $matches[$i];
             $attrname = strtolower($m[1]);
             $attrval  = $m[2];
-            # allow only recognized attributes
+            // allow only recognized attributes
             if (in_array($attrname, $allowed_keys, true)) {
-                # make sure that style attributes do not have a url in them
+                // make sure that style attributes do not have a url in them
                 if ($attrname != 'style' ||
-                      (stristr($attrval, 'url') === FALSE &&
-                      stristr($attrval, 'import') === FALSE)) {
+                      (stristr($attrval, 'url') === false &&
+                      stristr($attrval, 'import') === false)) {
                     $clean_attr.= " $attrname=$attrval";
                 }
             }

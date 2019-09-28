@@ -6,16 +6,18 @@
  * @author     Lars (LarsDW223)
  */
 
-if(!defined('DOKU_INC')) die();
+if (!defined('DOKU_INC')) die();
 
-class helper_plugin_exttab3_odt extends DokuWiki_Plugin {
-
-    function render(Doku_Renderer $renderer, $data) {
+class helper_plugin_exttab3_odt extends DokuWiki_Plugin
+{
+    public function render(Doku_Renderer $renderer, $data)
+    {
         $properties = array();
 
         // Return if installed ODT plugin version is too old.
-        if ( method_exists($renderer, 'getODTProperties') == false ||
-             method_exists($renderer, '_odtTableAddColumnUseProperties') == false ) {
+        if ( method_exists($renderer, 'getODTProperties') == false
+            || method_exists($renderer, '_odtTableAddColumnUseProperties') == false
+        ) {
             return false;
         }
 
@@ -32,7 +34,7 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin {
         // class to get CSS Properties by $render->getODTProperties()
         $class = 'exttable';
 
-        switch ( $state ) {
+        switch ($state) {
             case DOKU_LEXER_ENTER:    // open tag
                 if (!class_exists('ODTDocument')) {
                     // Code for backwards compatibility to older ODT versions
@@ -65,7 +67,7 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin {
                 } else {
                     switch ($tag) {
                         case 'table':
-                            $renderer->_odtTableOpenUseCSS(NULL, NULL, $tag, $attr);
+                            $renderer->_odtTableOpenUseCSS(null, null, $tag, $attr);
                             break;
                         case 'caption':
                             // There is no caption in ODT table format.
