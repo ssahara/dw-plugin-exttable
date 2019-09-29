@@ -37,40 +37,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
 
 
     protected $stack = array();  // stack of current open tag - used by handle() method
-    protected $tagsmap  = array();
-    protected $attrsmap = array();
-
-    public function __construct()
-    {
-        // define name, prefix and postfix of tags
-        $this->tagsmap = array(
-                'table'    => array("", "\n" ),     // table start  : {|
-                '/table'   => array("", "\n"),      // table end    : |}
-                'caption'  => array("", ""),        // caption      : |+
-                '/caption' => array("", "\n"),
-                'tr'       => array("", "\n"),      // table row    : |-
-                '/tr'      => array("", "\n"),
-                'th'       => array("", ""),        // table header : !
-                '/th'      => array("", "\n"),
-                'td'       => array("", ""),        // table data   : |
-                '/td'      => array("", "\n"),
-        );
-
-        // define allowable attibutes for table tags
-        $this->attrsmap = array(
-            // html5 HTML Global Attributes
-            'accesskey', 'class', 'contenteditable', 'contextmenu',
-            'dir', 'draggable', 'dropzone', 'hidden', 'id', 'lang',
-            'spellcheck', 'style', 'tabindex', 'title', 'translate',
-            'xml:lang',
-            // html5 table tag
-            'border', 'sortable',
-            // html5 th and td tag
-            'abbr', 'colspan', 'headers', 'rowspan', 'scope', 'sorted',
-            // deprecated in html5
-            'align', 'valign', 'width', 'height', 'bgcolor', 'nowrap',
-        );
-    }
+    protected $tagsmap;
+    protected $attrsmap;
 
     /**
      * Connect pattern to lexer
@@ -123,20 +91,25 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
      * helper function to simplify writing plugin calls to the instruction list
      * first three arguments are passed to function render as $data
      */
-    protected function _writeCall($tag, $attr, $state, $pos, $match, $handler)
-    {
-        $handler->addPluginCall($this->getPluginName(),
-            array($state, $tag, $attr), $state, $pos, $match);
-    }
+//  protected function _writeCall($tag, $attr, $state, $pos, $match, $handler)
+//  {
+//      $handler->addPluginCall($this->getPluginName(),
+//          array($state, $tag, $attr), $state, $pos, $match
+//      );
+//  }
 
     protected function _open($tag, $attr, $pos, $match, $handler)
     {
-        $this->_writeCall($tag,$attr,DOKU_LEXER_ENTER, $pos,$match,$handler);
+      //$this->_writeCall($tag,$attr,DOKU_LEXER_ENTER, $pos,$match,$handler);
+        $match = array(DOKU_LEXER_ENTER, $tag, $attr);
+        $handler->plugin($match, 'addPluginCall', $pos, $this->getPluginName());
     }
 
     protected function _close($tag, $pos, $match, $handler)
     {
-        $this->_writeCall($tag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+      //$this->_writeCall($tag,'',DOKU_LEXER_EXIT, $pos,$match,$handler);
+        $match = array(DOKU_LEXER_EXIT, $tag, $attr);
+        $handler->plugin($match, 'addPluginCall', $pos, $this->getPluginName());
     }
 
     /**
@@ -205,6 +178,11 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
     public function handle($match, $state, $pos, Doku_Handler $handler)
     {
         switch ($state) {
+            case 'addPluginCall':
+                // write plugin instruction to call list of the handler
+                // Note: $match is array, not matched text
+                return $data = $match;
+
             case DOKU_LEXER_ENTER:
                 // table start
                 list($tag, $attr) = $this->interpret($match);
@@ -331,7 +309,10 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
 
     protected function render_xhtml(Doku_Renderer $renderer, $data)
     {
-        //list($tag, $state, $match) = $data;
+        // prepare class properties
+        isset($this->tagsmap) || $this->setTagsmap();
+        isset($this->attrmap) || $this->setAllowedAttributes();
+
         list($state, $tag, $attr) = $data;
 
         switch ($state) {
@@ -349,9 +330,8 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
         return true;
     }
 
-
     /**
-     * open a exttab tag, used by render_xhtml()
+     * open a exttab tag, used in render_xhtml()
      *
      * @param  string $tag        'table','caption','tr','th' or 'td'
      * @param  string $attr       attibutes of tag element
@@ -366,7 +346,7 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
     }
 
     /**
-     * close a exttab tag, used by render_xhtml()
+     * close a exttab tag, used in render_xhtml()
      *
      * @param  string $tag        'table','caption','tr','th' or 'td'
      * @return string             html used to close the tag
@@ -378,6 +358,46 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
         return $before.'</'.$tag.'>'.$after;
     }
 
+    /**
+     * prepare tagsmap used in tag_open() and tag_close()
+     */
+    protected function setTagsmap()
+    {
+        // define name, prefix and postfix of tags
+        $this->tagsmap = array(
+                'table'    => array("", "\n" ),     // table start  : {|
+                '/table'   => array("", "\n"),      // table end    : |}
+                'caption'  => array("", ""),        // caption      : |+
+                '/caption' => array("", "\n"),
+                'tr'       => array("", "\n"),      // table row    : |-
+                '/tr'      => array("", "\n"),
+                'th'       => array("", ""),        // table header : !
+                '/th'      => array("", "\n"),
+                'td'       => array("", ""),        // table data   : |
+                '/td'      => array("", "\n"),
+        );
+    }
+
+    /**
+     * prepare attrsmap used in cleanAttrString()
+     */
+    protected function setAllowedAttributes()
+    {
+        // define allowable attibutes for table tags
+        $this->attrsmap = array(
+            // html5 HTML Global Attributes
+            'accesskey', 'class', 'contenteditable', 'contextmenu',
+            'dir', 'draggable', 'dropzone', 'hidden', 'id', 'lang',
+            'spellcheck', 'style', 'tabindex', 'title', 'translate',
+            'xml:lang',
+            // html5 table tag
+            'border', 'sortable',
+            // html5 th and td tag
+            'abbr', 'colspan', 'headers', 'rowspan', 'scope', 'sorted',
+            // deprecated in html5
+            'align', 'valign', 'width', 'height', 'bgcolor', 'nowrap',
+        );
+    }
 
 
     /**
