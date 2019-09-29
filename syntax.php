@@ -91,12 +91,12 @@ class syntax_plugin_exttab3 extends DokuWiki_Syntax_Plugin
      * helper function to simplify writing plugin calls to the instruction list
      * first three arguments are passed to function render as $data
      */
-    protected function _writeCall($tag, $attr, $state, $pos, $match, $handler)
-    {
-        $handler->addPluginCall($this->getPluginName(),
-            array($state, $tag, $attr), $state, $pos, $match
-        );
-    }
+//  protected function _writeCall($tag, $attr, $state, $pos, $match, $handler)
+//  {
+//      $handler->addPluginCall($this->getPluginName(),
+//          array($state, $tag, $attr), $state, $pos, $match
+//      );
+//  }
 
     protected function _open($tag, $attr, $pos, $match, $handler)
     {
