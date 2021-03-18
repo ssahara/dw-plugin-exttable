@@ -30,6 +30,14 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin
             $style = substr($matches[0], 6);
             $style = trim($style, ' "');
         }
+		$rowspan = 1;
+		if (preg_match('/rowspan[ ]*=[ ]*"([0-9]*)"/', $attr, $matches) === 1) {
+            $rowspan = $matches[1];
+        }
+		$colspan = 1;
+		if (preg_match('/colspan[ ]*=[ ]*"([0-9]*)"/', $attr, $matches) === 1) {
+            $colspan = $matches[1];
+        }
 
         // class to get CSS Properties by $render->getODTProperties()
         $class = 'exttable';
@@ -51,7 +59,7 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin
                             $renderer->_odtTableRowOpenUseProperties($properties);
 
                             // Parameter 'colspan=0' indicates span across all columns!
-                            $renderer->_odtTableHeaderOpenUseProperties($properties, 0, 1);
+                            $renderer->_odtTableHeaderOpenUseProperties($properties, 0, $rowspan);
                             break;
                         case 'th':
                             $renderer->_odtTableHeaderOpenUseProperties($properties);
@@ -75,16 +83,16 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin
                             $renderer->_odtTableRowOpenUseCSS($tag, $attr);
 
                             // Parameter 'colspan=0' indicates span across all columns!
-                            $renderer->_odtTableHeaderOpenUseCSS(0, 1, $tag, $attr);
+                            $renderer->_odtTableHeaderOpenUseCSS(0, $rowspan, $tag, $attr);
                             break;
                         case 'th':
-                            $renderer->_odtTableHeaderOpenUseCSS(1, 1, $tag, $attr);
+                            $renderer->_odtTableHeaderOpenUseCSS($colspan, $rowspan, $tag, $attr);
                             break;
                         case 'tr':
                             $renderer->_odtTableRowOpenUseCSS($tag, $attr);
                             break;
                         case 'td':
-                            $renderer->_odtTableCellOpenUseCSS(1, 1, $tag, $attr);
+                            $renderer->_odtTableCellOpenUseCSS($colspan, $rowspan, $tag, $attr);
                             break;
                     }
                 }
