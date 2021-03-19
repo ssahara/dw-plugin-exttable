@@ -24,18 +24,22 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin
         //list($tag, $state, $match) = $data;
         list($state, $tag, $attr) = $data;
 
-        // Get style content
+        // get style attribute
         $style = '';
         if (preg_match('/style=".*"/', $attr, $matches) === 1) {
             $style = substr($matches[0], 6);
             $style = trim($style, ' "');
         }
-		$rowspan = 1;
-		if (preg_match('/rowspan[ ]*=[ ]*"([0-9]*)"/', $attr, $matches) === 1) {
+
+        // get rowspan attribute
+        $rowspan = 1;
+        if (preg_match('/rowspan[ ]*=[ ]*"([0-9]*)"/', $attr, $matches) === 1) {
             $rowspan = $matches[1];
         }
-		$colspan = 1;
-		if (preg_match('/colspan[ ]*=[ ]*"([0-9]*)"/', $attr, $matches) === 1) {
+
+        // get colspan attribute
+        $colspan = 1;
+        if (preg_match('/colspan[ ]*=[ ]*"([0-9]*)"/', $attr, $matches) === 1) {
             $colspan = $matches[1];
         }
 
