@@ -5,9 +5,6 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Lars (LarsDW223)
  */
-
-if (!defined('DOKU_INC')) die();
-
 class helper_plugin_exttab3_odt extends DokuWiki_Plugin
 {
     public function render(Doku_Renderer $renderer, $data)
