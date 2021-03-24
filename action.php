@@ -7,10 +7,6 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Satoshi Sahara <sahara.satoshi@gmail.com>
  */
-
-// must be run within Dokuwiki
-if (!defined('DOKU_INC')) die();
-
 class action_plugin_exttab3 extends DokuWiki_Action_Plugin
 {
     /**
