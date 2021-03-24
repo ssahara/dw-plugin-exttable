@@ -4,6 +4,7 @@
  * 
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Lars (LarsDW223)
+ * @author     Thomas Schäfer <thomas.schaefer@itschert.net>
  */
 class helper_plugin_exttab3_odt extends DokuWiki_Plugin
 {
@@ -18,7 +19,6 @@ class helper_plugin_exttab3_odt extends DokuWiki_Plugin
             return false;
         }
 
-        //list($tag, $state, $match) = $data;
         list($state, $tag, $attr) = $data;
 
         // get style attribute
